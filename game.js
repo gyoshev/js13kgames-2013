@@ -102,7 +102,7 @@
                 player.radius = 0;
             } else if (!player.dead && !this.passed && this.top() > player.y + player.radius) {
                 this.passed = true;
-                player.score += 1;
+                player.tunnelsPassed += 1;
             }
         },
 
@@ -202,7 +202,7 @@
         this.color = '#cccccc';
         this.strokeColor = '#f1f1f1';
         this.speed = 0;
-        this.score = 0;
+        this.tunnelsPassed = 0;
         this.dead = false;
     }
 
@@ -259,9 +259,9 @@
         var currentLevel = 0;
 
         var levels = [
-            { enemies: 30, tunnels: 1, powerups: 0 },
-            { enemies: 45, tunnels: 1, powerups: 2 },
-            { enemies: 60, tunnels: 1, powerups: 4 }
+            { title: "Eat, but don't overeat", enemies: 30, tunnels: 0, powerups: 0 },
+            { title: "Watch out for blockades", enemies: 45, tunnels: 1, powerups: 2 },
+            { title: "It's getting crowded", enemies: 60, tunnels: 1, powerups: 4 }
         ];
 
         var gameObjects = {
@@ -372,9 +372,13 @@
                 ctx.shadowBlur = 5;
                 ctx.textAlign = "right";
 
-                ctx.font = "16pt Arial";
-                ctx.fillStyle = "#f1f1f1";
-                ctx.fillText("Blockades passed: " + this.player.score, width - 10, 30);
+                var tunnelsPassed = this.player.tunnelsPassed;
+
+                if (tunnelsPassed) {
+                    ctx.font = "16pt Arial";
+                    ctx.fillStyle = "#f1f1f1";
+                    ctx.fillText("Blockades passed: " + tunnelsPassed, width - 10, 30);
+                }
 
                 ctx.restore();
             },
