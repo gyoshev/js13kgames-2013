@@ -50,6 +50,7 @@
     function Tunnel() {
         this.width = 90;
         this.height = 20;
+        this.gateRadius = new Blob();
         this.init();
     };
 
@@ -103,10 +104,18 @@
 
         afterInit: function(game) {
             var enemies = game.enemies;
+            var gateRadius = this.gateRadius;
+            var enemy;
+
+            gateRadius.x = (this.start + this.end) / 2;
+            gateRadius.y = this.y - this.height / 2;
+            gateRadius.radius = 2*this.height;
 
             for (var i = 0; i < enemies.length; i++) {
-                if (this.intersectsWith(enemies[i])) {
-                    enemies[i].radius = 0;
+                enemy = enemies[i];
+
+                if (blobInRect(enemy, 0, this.y-this.height, width, this.height) || gateRadius.overlap(enemy)) {
+                    enemy.radius = 0;
                 }
             }
         }
@@ -144,6 +153,15 @@
             return this.y - this.radius;
         },
 
+        overlap: function(other) {
+            var r = this.radius;
+            var R = other.radius;
+
+            var d = this.centerDistance(other);
+            var overlapDistance = (r + R - d) / 2;
+            return (R && overlapDistance > 0);
+        },
+
         interact: function(player) {
             // http://mathworld.wolfram.com/Circle-CircleIntersection.html
             var r = this.radius;
@@ -151,7 +169,7 @@
 
             var d = this.centerDistance(player);
             var overlapDistance = (r + R - d) / 2;
-            var areOverlapping =  (R && overlapDistance > 0);
+            var overlap =  (R && overlapDistance > 0);
 
             if (r > R) {
                 this.color = "#ffaaaa";
@@ -159,7 +177,7 @@
                 this.color = "#aaaaff";
             }
 
-            if (areOverlapping) {
+            if (overlap) {
                 var Rsq = R*R, rsq = r*r, dsq = d*d, pi = Math.PI;
                 var AR = Rsq*pi, Ar = rsq*pi;
 
