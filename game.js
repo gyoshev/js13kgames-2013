@@ -62,6 +62,7 @@
             this.y = random() * height - height;
             this.start = constrain(random() * width, this.offset, width - this.offset - this.width);
             this.end = this.start + this.width;
+            this.passed = false;
         },
 
         draw: function(ctx) {
@@ -80,10 +81,10 @@
             ctx.lineTo(this.end, bottom);
             ctx.lineTo(width, bottom);
 
-            ctx.fillStyle = "#aaa";
+            ctx.fillStyle = "#ea4a18";
             ctx.fill();
             ctx.lineWidth = 1;
-            ctx.strokeStyle = '#003300';
+            ctx.strokeStyle = "#ffac2c";
             ctx.stroke();
         },
 
@@ -99,6 +100,9 @@
         interact: function(player) {
             if (this.intersectsWith(player)) {
                 player.radius = 0;
+            } else if (!player.dead && !this.passed && this.top() > player.y + player.radius) {
+                this.passed = true;
+                player.score += 1;
             }
         },
 
@@ -142,8 +146,8 @@
             ctx.arc(this.x, this.y, radius, 0, 2 * Math.PI, false);
             ctx.fillStyle = this.color;
             ctx.fill();
-            ctx.lineWidth = 1;
-            ctx.strokeStyle = '#003300';
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = this.strokeColor;
             ctx.stroke();
         },
 
@@ -171,9 +175,11 @@
             var overlap =  (R && overlapDistance > 0);
 
             if (r > R) {
-                this.color = "#ffaaaa";
+                this.color = "#ea4a18";
+                this.strokeColor = "#ffac2c";
             } else {
-                this.color = "#aaaaff";
+                this.color = "#317393";
+                this.strokeColor = "#82c0cf";
             }
 
             if (overlap) {
@@ -194,7 +200,10 @@
         this.x = width / 2;
         this.y = height * 7/8;
         this.color = '#cccccc';
+        this.strokeColor = '#f1f1f1';
         this.speed = 0;
+        this.score = 0;
+        this.dead = false;
     }
 
     Player.prototype = {
@@ -246,10 +255,19 @@
 
     var game = (function() {
         var state = "";
+
+        var currentLevel = 0;
+
+        var levels = [
+            { enemies: 30, tunnels: 1, powerups: 0 },
+            { enemies: 45, tunnels: 1, powerups: 2 },
+            { enemies: 60, tunnels: 1, powerups: 4 }
+        ];
+
         var gameObjects = {
-            enemies: { type: Blob, count: 60 },
-            tunnels: { type: Tunnel, count: 1 },
-            powerups: { type: Splitter, count: 4 }
+            enemies: { type: Blob },
+            tunnels: { type: Tunnel },
+            powerups: { type: Splitter }
         };
 
         return {
@@ -283,13 +301,13 @@
                 for (var field in gameObjects) {
                     var array = [];
                     var objectInfo = gameObjects[field];
-                    for (var i = 0; i < objectInfo.count; i++) {
+                    for (var i = 0; i < levels[currentLevel][field]; i++) {
                         array.push(new objectInfo.type());
                     }
                     this[field] = array;
                 }
 
-                for (var i = 0; i < gameObjects["tunnels"].count; i++) {
+                for (var i = 0; i < levels[currentLevel].tunnels; i++) {
                     this.tunnels[i].afterInit(game);
                 }
 
@@ -340,6 +358,25 @@
                 if (!this.running()) {
                     this.showMessage("Game over", "Press <Space> to play again");
                 }
+
+                this.score();
+            },
+
+            score: function() {
+                var ctx = this.ctx;
+
+                ctx.save();
+                ctx.shadowColor = "rgba(0,0,0,1)";
+                ctx.shadowOffsetX = 0;
+                ctx.shadowOffsetY = 0;
+                ctx.shadowBlur = 5;
+                ctx.textAlign = "right";
+
+                ctx.font = "16pt Arial";
+                ctx.fillStyle = "#f1f1f1";
+                ctx.fillText("Blockades passed: " + this.player.score, width - 10, 30);
+
+                ctx.restore();
             },
 
             accelerate: function() {
@@ -377,6 +414,8 @@
 
             lose: function() {
                 state = "over:lost";
+
+                this.player.dead = true;
 
                 this.normalize();
             }
