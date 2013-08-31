@@ -34,6 +34,19 @@
         return Math.random();
     }
 
+    function blobInRect(blob, x, y, w, h) {
+        var closestX = constrain(blob.x, x, x + w);
+        var closestY = constrain(blob.y, y, y + h);
+
+        // Calculate the distance between the circle's center and this closest point
+        var distanceX = blob.x - closestX;
+        var distanceY = blob.y - closestY;
+
+        // If the distance is less than the circle's radius, an intersection occurs
+        var distanceSquared = (distanceX * distanceX) + (distanceY * distanceY);
+        return distanceSquared < (blob.radius * blob.radius);
+    }
+
     function Tunnel() {
         this.width = 90;
         this.height = 20;
@@ -78,10 +91,8 @@
         },
 
         intersectsWith: function(blob) {
-            var horizontal = (blob.x - blob.radius < this.start) || (blob.x + blob.radius > this.end);
-            var vertical = blob.y + blob.radius > this.y && blob.y - blob.radius < this.y;
-
-            return horizontal && vertical;
+            return blobInRect(blob, 0, this.y - this.height, this.start, this.height) ||
+                   blobInRect(blob, this.end, this.y - this.height, width - this.end, this.height);
         },
 
         interact: function(player) {
@@ -266,6 +277,10 @@
                     this[field] = array;
                 }
 
+                for (var i = 0; i < gameObjects["tunnels"].count; i++) {
+                    this.tunnels[i].afterInit(game);
+                }
+
                 this.speed = 30;
             },
 
@@ -294,10 +309,6 @@
 
                         if (obj.top() > height) {
                             obj.init();
-
-                            if (obj.afterInit) {
-                                obj.afterInit(game);
-                            }
                         }
 
                         obj.draw(ctx);
@@ -306,6 +317,10 @@
                     if (player.radius < 1 || player.radius > Math.max(width, height)) {
                         this.lose();
                     }
+                }
+
+                for (var i = 0; i < this.tunnels.length; i++) {
+                    this.tunnels[i].afterInit(game);
                 }
 
                 player.draw(ctx);
