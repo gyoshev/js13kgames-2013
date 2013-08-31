@@ -163,7 +163,6 @@
         },
 
         interact: function(player) {
-            // http://mathworld.wolfram.com/Circle-CircleIntersection.html
             var r = this.radius;
             var R = player.radius;
 
@@ -178,19 +177,14 @@
             }
 
             if (overlap) {
-                var Rsq = R*R, rsq = r*r, dsq = d*d, pi = Math.PI;
-                var AR = Rsq*pi, Ar = rsq*pi;
+                var pi = Math.PI;
+                var mod = r < R ? -1 : 1;
+                while (R && r && (r + R - d) > 0) {
+                    this.radius = r = Math.max(0, r + mod/r);
+                    player.radius = R = Math.max(0, R - mod/R);
+                    d = this.centerDistance(player);
+                }
 
-                var overlapArea =
-                    (rsq/Math.cos((dsq+rsq-Rsq)/(2*d*r))
-                     + Rsq/Math.cos((dsq+Rsq-rsq)/(2*d*R))
-                     - Math.sqrt((-d+r+R)*(d+r-R)*(d-r+R)*(d+r+R))/2)/pi;
-
-                     overlapArea = overlapArea || 0;
-
-                     var mod = r > R ? 1 : -1;
-                     this.radius = Math.sqrt((pi*rsq + mod*overlapArea)/pi) || 0;
-                     player.radius = Math.sqrt((pi*Rsq - mod*overlapArea)/pi) || 0;
             }
         }
     };
