@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset=utf-8>
+  <title>js13kgames competition entry</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      width: 100%;
+      height: 100%;
+      background: #333;
+    }
+
+    #c {
+      border: 1px solid #fff;
+      position: relative;
+      top: 50%;
+      left: 50%;
+      margin: -400px 0 0 -300px;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="c" width="600" height="800"></canvas>
+
+  <script>
+    (function() {
+      var requestAnimationFrame =
+          window.requestAnimationFrame ||
+          window.mozRequestAnimationFrame ||
+          window.webkitRequestAnimationFrame ||
+          window.msRequestAnimationFrame;
+      window.requestAnimationFrame = requestAnimationFrame;
+    })();
+
+    var width = 600;
+    var height = 800;
+
+    // init canvas element
+    var canvas = document.getElementById("c");
+    canvas.width = width;
+    canvas.height = height;
+    canvas.style.margin = "-" + height/2 + "px 0 0 -" + width/2 + "px";
+
+    var ctx = canvas.getContext("2d");
+
+    function centerDistance(other) {
+      return Math.sqrt(Math.pow(this.x - other.x, 2) + Math.pow(this.y - other.y, 2));
+    }
+
+    function constrain(value, min, max) {
+      return Math.min(Math.max(value, min), max);
+    }
+
+    function random() {
+      return Math.random();
+    }
+
+    function Tunnel() {
+      this.width = 90;
+      this.height = 20;
+      this.init();
+    };
+
+    Tunnel.prototype = {
+      // minimum offset from edges
+      offset: 50,
+
+      init: function() {
+        this.y = random() * height - height;
+        this.start = constrain(random() * width, this.offset, width - this.offset - this.width);
+        this.end = this.start + this.width;
+      },
+
+      draw: function() {
+        var c = window.ctx;
+        var height = this.height;
+        var bottom = this.y;
+        var top = bottom - height;
+        c.beginPath();
+
+        c.moveTo(0, top);
+        c.lineTo(this.start, top);
+        c.lineTo(this.start, bottom);
+        c.lineTo(0, bottom);
+
+        c.moveTo(width, top);
+        c.lineTo(this.end, top);
+        c.lineTo(this.end, bottom);
+        c.lineTo(width, bottom);
+
+        c.fillStyle = "#aaa";
+        c.fill();
+        c.lineWidth = 1;
+        c.strokeStyle = '#003300';
+        c.stroke();
+      },
+
+      top: function() {
+        return this.y - this.height;
+      },
+
+      intersectsWith: function(blob) {
+        var horizontal = (blob.x - blob.radius < this.start) || (blob.x + blob.radius > this.end);
+        var vertical = blob.y + blob.radius > this.y && blob.y - blob.radius < this.y;
+
+        return horizontal && vertical;
+      },
+
+      interact: function(player) {
+        if (this.intersectsWith(player)) {
+          player.radius = 0;
+        }
+      },
+
+      afterInit: function(game) {
+        var enemies = game.enemies;
+
+        for (var i = 0; i < enemies.length; i++) {
+          if (this.intersectsWith(enemies[i])) {
+            enemies[i].radius = 0;
+          }
+        }
+      }
+    };
+
+    function Blob() {
+      this.init();
+    };
+
+    Blob.prototype = {
+      init: function() {
+        this.radius = Math.max(5, random() * 30);
+        this.x = random() * width;
+        this.y = random() * height - height;
+      },
+
+      draw: function() {
+        var radius = this.radius;
+
+        if (radius == 0) {
+          return;
+        }
+        var c = window.ctx;
+        c.beginPath();
+        c.arc(this.x, this.y, radius, 0, 2 * Math.PI, false);
+        c.fillStyle = this.color;
+        c.fill();
+        c.lineWidth = 1;
+        c.strokeStyle = '#003300';
+        c.stroke();
+      },
+
+      centerDistance: centerDistance,
+
+      top: function() {
+        return this.y - this.radius;
+      },
+
+      interact: function(player) {
+        // http://mathworld.wolfram.com/Circle-CircleIntersection.html
+        var r = this.radius;
+        var R = player.radius;
+
+        var d = this.centerDistance(player);
+        var overlapDistance = (r + R - d) / 2;
+        var areOverlapping =  (R && overlapDistance > 0);
+
+        if (r > R) {
+          this.color = "#ffaaaa";
+        } else {
+          this.color = "#aaaaff";
+        }
+
+        if (areOverlapping) {
+          var Rsq = R*R, rsq = r*r, dsq = d*d, pi = Math.PI;
+          var AR = Rsq*pi, Ar = rsq*pi;
+
+          var overlapArea =
+              (rsq/Math.cos((dsq+rsq-Rsq)/(2*d*r))
+              + Rsq/Math.cos((dsq+Rsq-rsq)/(2*d*R))
+               - Math.sqrt((-d+r+R)*(d+r-R)*(d-r+R)*(d+r+R))/2)/pi;
+
+          overlapArea = overlapArea || 0;
+
+          var mod = r > R ? 1 : -1;
+          this.radius = Math.sqrt((pi*rsq + mod*overlapArea)/pi) || 0;
+          player.radius = Math.sqrt((pi*Rsq - mod*overlapArea)/pi) || 0;
+        }
+      }
+    };
+
+    function Player() {
+      this.radius = 10;
+      this.x = width / 2;
+      this.y = height * 7/8;
+      this.color = '#cccccc';
+      this.speed = 0;
+    }
+
+    Player.prototype = {
+      draw: Blob.prototype.draw
+    };
+
+    function Splitter() {
+      this.init();
+    }
+
+    Splitter.prototype = {
+      draw: function() {
+        var x = this.x;
+        var y = this.y;
+        var c = window.ctx;
+
+        c.beginPath();
+        c.moveTo(x-5, y);
+        c.lineTo(x,y+10);
+        c.lineTo(x+5, y);
+        c.lineTo(x, y-10);
+        c.closePath();
+        c.fillStyle = "#00ee00";
+        c.fill();
+        c.lineWidth = 1;
+        c.strokeStyle = '#003300';
+        c.stroke();
+      },
+
+      top: function() {
+        return this.y - 10;
+      },
+
+      init: function() {
+        this.x = random() * width;
+        this.y = random() * height - height;
+      },
+
+      centerDistance: centerDistance,
+
+      interact: function(player) {
+        var overlap = this.centerDistance(player) < player.radius;
+
+        if (overlap) {
+          player.radius /= 2;
+          this.init();
+        }
+      }
+    }
+
+    var game = (function() {
+      var state = "";
+      var gameObjects = {
+        enemies: { type: Blob, count: 60 },
+        tunnels: { type: Tunnel, count: 1 },
+        powerups: { type: Splitter, count: 4 }
+      };
+
+      return {
+        running: function() {
+          return state == "running";
+        },
+        init: function() {
+          state = "running";
+
+          this.minSpeed = 2;
+
+          this.player = new Player();
+
+          for (var field in gameObjects) {
+            var array = [];
+            var objectInfo = gameObjects[field];
+            for (var i = 0; i < objectInfo.count; i++) {
+              array.push(new objectInfo.type());
+            }
+            this[field] = array;
+          }
+
+          this.speed = 30;
+        },
+
+        tick: function() {
+          ctx.clearRect(0,0,width,height);
+
+          var player = this.player;
+
+          if (this.speed > this.minSpeed) {
+            this.speed -= 1;
+          } else if (this.speed < this.minSpeed) {
+            this.speed += 1;
+          }
+
+          player.x = constrain(player.x + player.speed || 0, player.radius, width - player.radius);
+
+          for (var field in gameObjects) {
+            var array = this[field];
+            for (var i = 0; i < array.length; i++) {
+              var obj = array[i];
+
+              obj.y += this.speed;
+
+              obj.interact(player);
+
+              if (obj.top() > height) {
+                obj.init();
+
+                if (obj.afterInit) {
+                    obj.afterInit(game);
+                }
+              }
+
+              obj.draw();
+            }
+
+            if (player.radius < 1 || player.radius > Math.max(width, height)) {
+              this.lose();
+            }
+          }
+
+          player.draw();
+
+          if (!this.running()) {
+            this.showMessage("Game over", "Press <Space> to play again");
+          }
+
+        },
+
+        accelerate: function() {
+          this.minSpeed = 10;
+        },
+
+        decelerate: function() {
+          this.minSpeed = 1;
+        },
+
+        normalize: function() {
+          this.minSpeed = 2;
+        },
+
+        showMessage: function (title, message) {
+          ctx.save();
+          ctx.shadowColor = "rgba(0,0,0,1)";
+          ctx.shadowOffsetX = 0;
+          ctx.shadowOffsetY = 0;
+          ctx.shadowBlur = 5;
+          ctx.textAlign = "center";
+
+          ctx.font = "24pt Arial";
+          ctx.fillStyle = "#f1f1f1";
+          ctx.fillText(title, width/2, height/2);
+
+          ctx.font = "16pt Arial";
+          ctx.fillStyle = "#f1f1f1";
+          ctx.fillText(message, width/2, height/2 + 30);
+
+          ctx.restore();
+        },
+
+        lose: function() {
+          state = "over:lost";
+
+          this.normalize();
+        }
+      };
+    })();
+
+    game.init();
+
+    requestAnimationFrame(function step(timestamp) {
+      game.tick();
+      requestAnimationFrame(step);
+    });
+
+    function on(type, handler) {
+      document.body.addEventListener(type, handler, false);
+    }
+
+    var UP = 38, DOWN = 40, LEFT = 37, RIGHT = 39, SPACE = 32;
+
+    on("keydown", function(e) {
+      var key = e.keyCode;
+      var player = game.player;
+
+      if (game.running()) {
+        if (key == RIGHT) {
+          player.speed = 4;
+        } else if (key == LEFT) {
+          player.speed = -4;
+        } else if (key == UP) {
+          game.accelerate();
+        } else if (key == DOWN) {
+          game.decelerate();
+        }
+      } else {
+        if (key == SPACE) {
+          game.init();
+        }
+      }
+
+    });
+
+    on("keyup", function(e) {
+      var key = e.keyCode;
+      if (key == UP || key == DOWN) {
+        game.normalize();
+      } else if (key == LEFT || key == RIGHT) {
+        game.player.speed = 0;
+      }
+    });
+  </script>
+</body>
+</html>
+
