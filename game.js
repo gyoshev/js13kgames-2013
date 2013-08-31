@@ -1,9 +1,23 @@
 (function() {
+    var w = window;
     var requestAnimationFrame =
-        window.requestAnimationFrame ||
-        window.mozRequestAnimationFrame ||
-        window.webkitRequestAnimationFrame ||
-        window.msRequestAnimationFrame;
+        w.requestAnimationFrame ||
+        w.oRequestAnimationFrame ||
+        w.mozRequestAnimationFrame ||
+        w.webkitRequestAnimationFrame ||
+        w.msRequestAnimationFrame;
+
+    if (!requestAnimationFrame) {
+        var lastTime = 0;
+        requestAnimationFrame = function(callback, element) {
+            var currTime = new Date().getTime();
+            var timeToCall = Math.max(0, 16 - (currTime - lastTime));
+            var id = w.setTimeout(function() { callback(currTime + timeToCall); }, 
+              timeToCall);
+            lastTime = currTime + timeToCall;
+            return id;
+        };
+    }
 
     var width = 600;
     var height = 800;
