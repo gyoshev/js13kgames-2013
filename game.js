@@ -258,9 +258,58 @@
         var currentLevel = 0;
 
         var levels = [
-            { title: "Don't overeat", enemies: 30, tunnels: 1, powerups: 0 },
-            { title: "Watch out for blockades", enemies: 45, tunnels: 1, powerups: 2 },
-            { title: "It's getting crowded", enemies: 60, tunnels: 1, powerups: 4 }
+            {
+                title: "Don't overeat",
+                enemies: 30,
+                powerups: 1
+            },
+            {
+                title: "Don't miss the tunnels",
+                enemies: 30,
+                tunnels: 1,
+                powerups: 1
+            },
+            {
+                title: "Don't catch your breath",
+                enemies: 30,
+                tunnels: 1,
+                powerups: 1,
+                setup: function() {
+                    this.endTime = +new Date + 1000 * 30; // 30s level
+                    this.startTime = +new Date 
+                    this.goalAt = 1000; // px
+                    this.travelled = 0;
+                },
+                tick: function() {
+                    var timeRemaining = (this.endTime - this.startTime) / 1000;
+
+                    if (timeRemaining < 0) {
+                        this.renderMessage(
+                            "Distance: " + this.travelled + " / " + this.goalAt + ", " +
+                            "time: 0s"
+                        );
+
+                        this.lose();
+                    } else {
+                        this.renderMessage(
+                            "Distance: " + this.travelled + " / " + this.goalAt + ", " +
+                            "time: " + timeRemaining + "s"
+                        );
+                    }
+                }
+            },
+            {
+                title: "Don't get lost in the crowd",
+                enemies: { count: 70, minSize: 20 },
+                powerups: 1
+            },
+            {
+                title: "Don't undermine your achievements",
+                powerups: 20,
+                init: function() {
+                    this.player.radius = 100;
+                }
+            }
         ];
 
         var gameObjects = {
@@ -300,13 +349,15 @@
                 for (var field in gameObjects) {
                     var array = [];
                     var objectInfo = gameObjects[field];
-                    for (var i = 0; i < levels[currentLevel][field]; i++) {
+                    var level = levels[currentLevel];
+                    var count = level[field] && level[field].count || level[field] || 0;
+                    for (var i = 0; i < count || 0; i++) {
                         array.push(new objectInfo.type());
                     }
                     this[field] = array;
                 }
 
-                for (var i = 0; i < levels[currentLevel].tunnels; i++) {
+                for (var i = 0; i < levels[currentLevel].tunnels || 0; i++) {
                     this.tunnels[i].afterInit(game);
                 }
 
@@ -393,7 +444,7 @@
                 if (tunnelsPassed) {
                     ctx.font = "16pt Arial";
                     ctx.fillStyle = "#f1f1f1";
-                    ctx.fillText("Blockades passed: " + tunnelsPassed, width - 10, 30);
+                    ctx.fillText("Tunnels passed: " + tunnelsPassed, width - 10, 30);
                 }
 
                 ctx.restore();
