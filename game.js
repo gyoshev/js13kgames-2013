@@ -331,6 +331,8 @@
                     game.tick();
                     requestAnimationFrame(step);
                 });
+
+                this.worldProgress = 0;
             },
 
             start: function() {
@@ -371,10 +373,9 @@
                 var player = this.player;
                 var progress = player.progress / levelLength;
 
-                ctx.fillStyle = this.backgroundPattern;
-                ctx.translate(0, player.progress % 38);
-                ctx.fillRect(0, -38, width, height + 38);
-                ctx.translate(0, -player.progress % 38);
+                this.worldProgress += this.speed;
+
+                this.background(ctx);
 
                 var status = this.statusMessage;
                 if (!player.dead() && (status.endsIn > now || status.opacity > 0)) {
@@ -430,9 +431,16 @@
 
                 this.progress(ctx, progress);
 
-                if (progress > 1.2) {
+                if (player.progress - levelLength > height) {
                     this.nextLevel();
                 }
+            },
+
+            background: function(ctx) {
+                ctx.fillStyle = this.backgroundPattern;
+                ctx.translate(0, this.worldProgress % 38);
+                ctx.fillRect(0, -38, width, height + 38);
+                ctx.translate(0, -this.worldProgress % 38);
             },
 
             score: function(ctx) {

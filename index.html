@@ -15,22 +15,43 @@
 
             #c {
                 border: 3px solid #fff;
-                position: relative;
+                position: absolute;;
                 top: 50%;
                 left: 50%;
+            }
+
+            #scoreDialog {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                width: 500px;
+                height: 700px;
+                margin: -350px 0 0 -250px;
+                border: 1px solid #fff;
+                background: #333;
             }
         </style>
     </head>
     <body>
         <canvas id="c"></canvas>
 
+        <div id="scoreDialog">
+            <button id="close">Close</button>
+        </div>
+
         <script src="klass.min.js"></script>
         <script src="game.js"></script>
         <script>
+            var $ = function(id) { return document.getElementById(id); };
+
+            $("close").addEventListener("click", function(e) {
+                $("scoreDialog").style.display = "none";
+            }, false);
+
             var bg = new Image();
 
             bg.onload = function() {
-                game.init(document.getElementById("c"));
+                game.init($("c"));
             };
 
             bg.src = "bg.png";
