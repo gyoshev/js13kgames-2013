@@ -257,7 +257,7 @@
                 powerups: 1,
                 setup: function() {
                     this.endTime = +new Date + 1000 * 30; // 30s level
-                    this.startTime = +new Date 
+                    this.startTime = +new Date;
                     this.goalAt = 1000; // px
                     this.travelled = 0;
                 },
@@ -305,8 +305,10 @@
             },
 
             init: function(canvas) {
+                this.hudWidth = 10;
+
                 // setup canvas element
-                canvas.width = width;
+                canvas.width = width + this.hudWidth;
                 canvas.height = height;
                 canvas.style.margin = "-" + height/2 + "px 0 0 -" + width/2 + "px";
 
@@ -332,7 +334,7 @@
                     var objectInfo = gameObjects[field];
                     var level = levels[currentLevel];
                     var count = level[field] && level[field].count || level[field] || 0;
-                    for (var i = 0; i < count || 0; i++) {
+                    for (var i = 0; i < count; i++) {
                         array.push(new objectInfo.type());
                     }
                     this[field] = array;
@@ -348,6 +350,8 @@
                     endsIn: +(new Date()) + 2000, // 3s display time
                     opacity: 1
                 };
+
+                this.y = 0;
 
                 this.speed = 30;
             },
@@ -372,6 +376,8 @@
                 } else if (this.speed < this.minSpeed) {
                     this.speed += 1;
                 }
+
+                this.y += this.speed;
 
                 player.x = constrain(player.x + player.speed || 0, player.radius, width - player.radius);
 
@@ -407,12 +413,14 @@
                     this.showMessage("Game over", "Press <Space> to play again");
                 }
 
-                this.score();
+                this.score(ctx);
+
+                var progress = this.y / (20 * height);
+
+                this.progress(ctx, progress);
             },
 
-            score: function() {
-                var ctx = this.ctx;
-
+            score: function(ctx) {
                 ctx.save();
                 ctx.shadowColor = "rgba(0,0,0,1)";
                 ctx.shadowOffsetX = 0;
@@ -429,6 +437,18 @@
                 }
 
                 ctx.restore();
+            },
+
+            progress: function(ctx, amountDone) {
+                var hudWidth = this.hudWidth;
+
+                ctx.fillStyle = "#111";
+                ctx.fillRect(width, 0, hudWidth, height);
+
+                var indicatorHeight = height * amountDone;
+
+                ctx.fillStyle = "#82c0cf";
+                ctx.fillRect(width, height - indicatorHeight, hudWidth, indicatorHeight);
             },
 
             accelerate: function() {
@@ -466,6 +486,14 @@
                 ctx.fillText(message, width/2, height/2 + 30);
 
                 ctx.restore();
+            },
+
+            win: function() {
+                state = "over:won";
+
+                currentLevel++;
+
+                this.normalize();
             },
 
             lose: function() {
