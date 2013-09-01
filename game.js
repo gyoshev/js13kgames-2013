@@ -258,7 +258,7 @@
         var currentLevel = 0;
 
         var levels = [
-            { title: "Eat, but don't overeat", enemies: 30, tunnels: 0, powerups: 0 },
+            { title: "Don't overeat", enemies: 30, tunnels: 1, powerups: 0 },
             { title: "Watch out for blockades", enemies: 45, tunnels: 1, powerups: 2 },
             { title: "It's getting crowded", enemies: 60, tunnels: 1, powerups: 4 }
         ];
@@ -345,7 +345,7 @@
 
                 for (var field in gameObjects) {
                     var array = this[field];
-                    for (var i = 0; i < array.length; i++) {
+                    for (var i = 0, len = array.length; i < len; i++) {
                         var obj = array[i];
 
                         obj.y += this.speed;
@@ -364,8 +364,9 @@
                     }
                 }
 
-                for (var i = 0; i < this.tunnels.length; i++) {
-                    this.tunnels[i].afterInit(game);
+                var tunnels = this.tunnels;
+                for (var i = 0; i < tunnels.length; i++) {
+                    tunnels[i].afterInit(game);
                 }
 
                 player.draw(ctx);
