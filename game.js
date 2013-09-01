@@ -247,8 +247,6 @@
     });
 
     var game = (function() {
-        var currentLevel = 0;
-
         var levels = [
             {
                 title: "Don't overeat",
@@ -310,6 +308,8 @@
             powerups: { type: Splitter }
         };
 
+        var levelLength = 4 * height;
+
         return {
             init: function(canvas) {
                 this.hudWidth = 10;
@@ -318,6 +318,8 @@
                 canvas.width = width + this.hudWidth;
                 canvas.height = height;
                 canvas.style.margin = "-" + height/2 + "px 0 0 -" + width/2 + "px";
+
+                this.currentLevel = 0;
 
                 this.ctx = canvas.getContext("2d");
 
@@ -330,6 +332,8 @@
             },
 
             start: function() {
+                var currentLevel = this.currentLevel;
+
                 this.minSpeed = 2;
 
                 this.player = new Player();
@@ -382,6 +386,8 @@
 
                 player.x = constrain(player.x + player.speed || 0, player.radius, width - player.radius);
 
+                var progress = player.progress / levelLength;
+
                 for (var field in gameObjects) {
                     var array = this[field];
                     for (var i = 0, len = array.length; i < len; i++) {
@@ -391,14 +397,14 @@
 
                         obj.interact(player);
 
-                        if (obj.top() > height) {
+                        if (progress < 1 && obj.top() > height) {
                             obj.init();
                         }
 
                         obj.draw(ctx);
                     }
 
-                    if (player.radius < 1 || player.radius > Math.max(width, height)) {
+                    if (player.dead()) {
                         this.lose();
                     }
                 }
@@ -418,9 +424,11 @@
                     this.showMessage("Game over", "Press <Space> to play again");
                 }
 
-                var progress = player.progress / (20 * height);
-
                 this.progress(ctx, progress);
+
+                if (progress > 1.2) {
+                    this.nextLevel();
+                }
             },
 
             score: function(ctx) {
@@ -487,9 +495,17 @@
                 ctx.restore();
             },
 
-            win: function() {
-                currentLevel++;
+            nextLevel: function() {
+                this.currentLevel++;
 
+                if (this.currentLevel < levels.length) {
+                    this.start();
+                } else {
+                    this.win();
+                }
+            },
+
+            win: function() {
                 this.normalize();
             },
 
