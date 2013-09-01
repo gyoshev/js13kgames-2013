@@ -12,8 +12,7 @@
         requestAnimationFrame = function(callback, element) {
             var currTime = new Date().getTime();
             var timeToCall = Math.max(0, 16 - (currTime - lastTime));
-            var id = w.setTimeout(function() { callback(currTime + timeToCall); }, 
-              timeToCall);
+            var id = w.setTimeout(function() { callback(currTime + timeToCall); }, timeToCall);
             lastTime = currTime + timeToCall;
             return id;
         };
@@ -139,7 +138,7 @@
         draw: function(ctx) {
             var radius = this.radius;
 
-            if (radius == 0) {
+            if (radius == 0 || this.y + radius < 0) {
                 return;
             }
             ctx.beginPath();
@@ -311,12 +310,28 @@
                     this.tunnels[i].afterInit(game);
                 }
 
+                this.statusMessage = {
+                    title: "Level " + (currentLevel + 1),
+                    message: levels[currentLevel].title,
+                    endsIn: +(new Date()) + 2000, // 3s display time
+                    opacity: 1
+                };
+
                 this.speed = 30;
             },
 
             tick: function() {
                 var ctx = this.ctx;
+                var now = +(new Date());
                 ctx.clearRect(0,0,width,height);
+
+                var status = this.statusMessage;
+                if (game.running() && (status.endsIn > now || status.opacity > 0)) {
+                    this.showMessage(status.title, status.message, status.opacity);
+                    if (status.endsIn < now) {
+                        status.opacity -= 0.05;
+                    }
+                }
 
                 var player = this.player;
 
@@ -395,8 +410,10 @@
                 this.minSpeed = 2;
             },
 
-            showMessage: function (title, message) {
+            showMessage: function (title, message, opacity) {
                 var ctx = this.ctx;
+
+                opacity = opacity || 1;
 
                 ctx.save();
                 ctx.shadowColor = "rgba(0,0,0,1)";
@@ -405,12 +422,14 @@
                 ctx.shadowBlur = 5;
                 ctx.textAlign = "center";
 
+                var textColor = "rgba(257,257,257," + opacity + ")";
+
                 ctx.font = "24pt Arial";
-                ctx.fillStyle = "#f1f1f1";
+                ctx.fillStyle = textColor;
                 ctx.fillText(title, width/2, height/2);
 
                 ctx.font = "16pt Arial";
-                ctx.fillStyle = "#f1f1f1";
+                ctx.fillStyle = textColor;
                 ctx.fillText(message, width/2, height/2 + 30);
 
                 ctx.restore();
@@ -463,6 +482,6 @@
         }
     });
 
-    window.game = game;
+    w.game = game;
 })();
 
