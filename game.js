@@ -94,9 +94,8 @@
         interact: function(player) {
             if (this.intersectsWith(player)) {
                 player.radius = 0;
-            } else if (!player.dead && !this.passed && this.top() > player.y + player.radius) {
+            } else if (!player.dead() && !this.passed && this.top() > player.y + player.radius) {
                 this.passed = true;
-                player.tunnelsPassed += 1;
             }
         },
 
@@ -183,6 +182,7 @@
                 while (R && r && (r + R - d) > 0) {
                     this.radius = r = Math.max(0, r + mod/r);
                     player.radius = R = Math.max(0, R - mod/R);
+                    player.score += 1;
                     d = this.centerDistance(player);
                 }
 
@@ -192,13 +192,26 @@
 
     var Player = Blob.extend(function() {
         this.radius = 10;
+
         this.x = width / 2;
         this.y = height * 7/8;
+
         this.color = '#cccccc';
         this.strokeColor = '#f1f1f1';
+
         this.speed = 0;
-        this.tunnelsPassed = 0;
-        this.dead = false;
+
+        this.progress = 0;
+        this.score = 0;
+    })
+    .methods({
+        dead: function() {
+            return this.radius < 1;
+        },
+
+        die: function() {
+            this.radius = 0;
+        }
     });
 
     var Splitter = Blob.extend(function() {
@@ -234,8 +247,6 @@
     });
 
     var game = (function() {
-        var state = "";
-
         var currentLevel = 0;
 
         var levels = [
@@ -300,10 +311,6 @@
         };
 
         return {
-            running: function() {
-                return state == "running";
-            },
-
             init: function(canvas) {
                 this.hudWidth = 10;
 
@@ -323,8 +330,6 @@
             },
 
             start: function() {
-                state = "running";
-
                 this.minSpeed = 2;
 
                 this.player = new Player();
@@ -351,8 +356,6 @@
                     opacity: 1
                 };
 
-                this.y = 0;
-
                 this.speed = 30;
             },
 
@@ -361,23 +364,21 @@
                 var now = +(new Date());
                 ctx.clearRect(0,0,width,height);
 
+                var player = this.player;
+
                 var status = this.statusMessage;
-                if (game.running() && (status.endsIn > now || status.opacity > 0)) {
+                if (!player.dead() && (status.endsIn > now || status.opacity > 0)) {
                     this.showMessage(status.title, status.message, status.opacity);
                     if (status.endsIn < now) {
                         status.opacity -= 0.05;
                     }
                 }
 
-                var player = this.player;
-
                 if (this.speed > this.minSpeed) {
                     this.speed -= 1;
                 } else if (this.speed < this.minSpeed) {
                     this.speed += 1;
                 }
-
-                this.y += this.speed;
 
                 player.x = constrain(player.x + player.speed || 0, player.radius, width - player.radius);
 
@@ -407,15 +408,17 @@
                     tunnels[i].afterInit(game);
                 }
 
-                player.draw(ctx);
+                this.score(ctx);
 
-                if (!this.running()) {
+                if (!player.dead()) {
+                    player.draw(ctx);
+
+                    player.progress += this.speed;
+                } else {
                     this.showMessage("Game over", "Press <Space> to play again");
                 }
 
-                this.score(ctx);
-
-                var progress = this.y / (20 * height);
+                var progress = player.progress / (20 * height);
 
                 this.progress(ctx, progress);
             },
@@ -428,13 +431,9 @@
                 ctx.shadowBlur = 5;
                 ctx.textAlign = "right";
 
-                var tunnelsPassed = this.player.tunnelsPassed;
-
-                if (tunnelsPassed) {
-                    ctx.font = "16pt Arial";
-                    ctx.fillStyle = "#f1f1f1";
-                    ctx.fillText("Tunnels passed: " + tunnelsPassed, width - 10, 30);
-                }
+                ctx.font = "16pt Arial";
+                ctx.fillStyle = "#f1f1f1";
+                ctx.fillText(this.player.score, width - 10, 30);
 
                 ctx.restore();
             },
@@ -489,17 +488,13 @@
             },
 
             win: function() {
-                state = "over:won";
-
                 currentLevel++;
 
                 this.normalize();
             },
 
             lose: function() {
-                state = "over:lost";
-
-                this.player.dead = true;
+                this.player.die();
 
                 this.normalize();
             }
@@ -516,7 +511,7 @@
         var key = e.keyCode;
         var player = game.player;
 
-        if (game.running()) {
+        if (!player.dead()) {
             if (key == RIGHT) {
                 player.speed = 4;
             } else if (key == LEFT) {
