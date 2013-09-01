@@ -21,10 +21,6 @@
     var width = 600;
     var height = 800;
 
-    function centerDistance(other) {
-        return Math.sqrt(Math.pow(this.x - other.x, 2) + Math.pow(this.y - other.y, 2));
-    }
-
     function constrain(value, min, max) {
         return Math.min(Math.max(value, min), max);
     }
@@ -46,14 +42,13 @@
         return distanceSquared < (blob.radius * blob.radius);
     }
 
-    function Tunnel() {
+    var Tunnel = klass(function() {
         this.width = 90;
         this.height = 20;
         this.gateRadius = new Blob();
         this.init();
-    };
-
-    Tunnel.prototype = {
+    })
+    .methods({
         // minimum offset from edges
         offset: 50,
 
@@ -122,13 +117,12 @@
                 }
             }
         }
-    };
+    });
 
-    function Blob() {
+    var Blob = klass(function() {
         this.init();
-    };
-
-    Blob.prototype = {
+    })
+    .methods({
         init: function() {
             this.radius = Math.max(5, random() * 30);
             this.x = random() * width;
@@ -150,7 +144,9 @@
             ctx.stroke();
         },
 
-        centerDistance: centerDistance,
+        centerDistance: function(other) {
+            return Math.sqrt(Math.pow(this.x - other.x, 2) + Math.pow(this.y - other.y, 2));
+        },
 
         top: function() {
             return this.y - this.radius;
@@ -192,9 +188,9 @@
 
             }
         }
-    };
+    });
 
-    function Player() {
+    var Player = Blob.extend(function() {
         this.radius = 10;
         this.x = width / 2;
         this.y = height * 7/8;
@@ -203,26 +199,19 @@
         this.speed = 0;
         this.tunnelsPassed = 0;
         this.dead = false;
-    }
+    });
 
-    Player.prototype = {
-        draw: Blob.prototype.draw
-    };
-
-    function Splitter() {
+    var Splitter = Blob.extend(function() {
         this.init();
-    }
-
-    Splitter.prototype = {
+        this.rotation = 0;
+        this.radius = 10;
+    }).methods({
         draw: function(ctx) {
-            var x = this.x;
-            var y = this.y;
-
+            var pi = Math.PI;
+            var rotation = this.rotation + pi / 180;
+            this.rotation = rotation;
             ctx.beginPath();
-            ctx.moveTo(x-5, y);
-            ctx.lineTo(x,y+10);
-            ctx.lineTo(x+5, y);
-            ctx.lineTo(x, y-10);
+            ctx.arc(this.x, this.y, this.radius, rotation, rotation + pi, true);
             ctx.closePath();
             ctx.fillStyle = "#00ee00";
             ctx.fill();
@@ -231,26 +220,18 @@
             ctx.stroke();
         },
 
-        top: function() {
-            return this.y - 10;
-        },
-
         init: function() {
             this.x = random() * width;
             this.y = random() * height - height;
         },
 
-        centerDistance: centerDistance,
-
         interact: function(player) {
-            var overlap = this.centerDistance(player) < player.radius;
-
-            if (overlap) {
+            if (this.overlap(player)) {
                 player.radius /= 2;
                 this.init();
             }
         }
-    }
+    });
 
     var game = (function() {
         var state = "";
