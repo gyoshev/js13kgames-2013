@@ -323,6 +323,8 @@
 
                 this.ctx = canvas.getContext("2d");
 
+                this.backgroundPattern = this.ctx.createPattern(bg, "repeat");
+
                 game.start();
 
                 requestAnimationFrame(function step(timestamp) {
@@ -333,6 +335,7 @@
 
             start: function() {
                 var currentLevel = this.currentLevel;
+                var level = levels[currentLevel];
 
                 this.minSpeed = 2;
 
@@ -341,7 +344,6 @@
                 for (var field in gameObjects) {
                     var array = [];
                     var objectInfo = gameObjects[field];
-                    var level = levels[currentLevel];
                     var count = level[field] && level[field].count || level[field] || 0;
                     for (var i = 0; i < count; i++) {
                         array.push(new objectInfo.type());
@@ -356,7 +358,7 @@
                 this.statusMessage = {
                     title: "Level " + (currentLevel + 1),
                     message: levels[currentLevel].title,
-                    endsIn: +(new Date()) + 2000, // 3s display time
+                    endsIn: +(new Date()) + 2000,
                     opacity: 1
                 };
 
@@ -366,9 +368,13 @@
             tick: function() {
                 var ctx = this.ctx;
                 var now = +(new Date());
-                ctx.clearRect(0,0,width,height);
-
                 var player = this.player;
+                var progress = player.progress / levelLength;
+
+                ctx.fillStyle = this.backgroundPattern;
+                ctx.translate(0, player.progress % 38);
+                ctx.fillRect(0, -38, width, height + 38);
+                ctx.translate(0, -player.progress % 38);
 
                 var status = this.statusMessage;
                 if (!player.dead() && (status.endsIn > now || status.opacity > 0)) {
@@ -385,8 +391,6 @@
                 }
 
                 player.x = constrain(player.x + player.speed || 0, player.radius, width - player.radius);
-
-                var progress = player.progress / levelLength;
 
                 for (var field in gameObjects) {
                     var array = this[field];
