@@ -211,6 +211,21 @@
 
         die: function() {
             this.radius = 0;
+        },
+
+        compare: function(size) {
+            var radius = this.radius;
+            size = size || {};
+
+            if (size.min && radius < size.min) {
+                return -1;
+            }
+
+            if (size.max && radius > size.max) {
+                return 1;
+            }
+
+            return 0;
         }
     });
 
@@ -247,11 +262,39 @@
     });
 
     var game = (function() {
+        function sizeTick(game) {
+            var player = game.player;
+            var compare = player.compare(this.endSize);
+            var messages = game.messages;
+
+            if (!messages.length) {
+                var message = { endsIn: +new Date + 2000, opacity: 1 };
+
+                if (compare < 0) {
+                    message.title = "Get bigger!";
+                    message.message = "Consume blue blobs";
+                } else if (compare > 0) {
+                    message.title = "Get smaller!";
+                    message.message = "Brush off red blobs";
+                } else {
+                    message.title = "You're in good shape";
+                    message.message = "Finish the level in that size";
+                }
+
+                messages.push(message);
+            }
+
+        }
+
         var levels = [
             {
-                title: "Don't overeat",
+                title: "Learning the ropes",
                 enemies: 30,
-                powerups: 1
+                powerups: 1,
+                endSize: {
+                    min: 50,
+                    max: 100
+                }
             },
             {
                 title: "Don't miss the tunnels",
@@ -264,19 +307,27 @@
                 enemies: 30,
                 tunnels: 1,
                 powerups: 1,
-                setup: function() {
-                    this.endTime = +new Date + 1000 * 30; // 30s level
+                setup: function(game) {
+                    var timeLimit = 1000 * 30;
+                    this.endTime = +new Date + timeLimit; // 30s level
+
+                    game.messages.push({
+                        title: "",
+                        message: "",
+                        endsIn: this.endTime,
+                        opacity: 1
+                    });
                 },
-                tick: function() {
+                tick: function(game) {
                     var now = +new Date;
                     var timeRemaining = (this.endTime - now) / 1000;
+                    var messages = game.messages;
+                    var message = messages[messages.length - 1];
 
-                    if (timeRemaining < 0) {
-                        game.renderMessage("Time left: 0s");
-
+                    if (!message || timeRemaining < 0) {
                         game.lose();
                     } else {
-                        game.renderMessage("Time left: " + timeRemaining.toFixed(1) + "s");
+                        message.title = timeRemaining.toFixed(1) + "s";
                     }
                 }
             },
@@ -300,9 +351,11 @@
             powerups: { type: Splitter }
         };
 
-        var levelLength = 4 * height;
+        var levelLength = 6 * height;
 
         return {
+            messages: [],
+
             init: function(canvas) {
                 this.hudWidth = 10;
 
@@ -311,7 +364,7 @@
                 canvas.height = height;
                 canvas.style.margin = "-" + height/2 + "px 0 0 -" + width/2 + "px";
 
-                this.currentLevel = 4;
+                this.currentLevel = 0;
 
                 this.ctx = canvas.getContext("2d");
 
@@ -331,7 +384,13 @@
                 var currentLevel = this.currentLevel;
                 var level = levels[currentLevel];
 
+                this.messages.length = 0;
+
                 this.minSpeed = 2;
+
+                if (level.endSize && !level.tick) {
+                    level.tick = sizeTick;
+                }
 
                 this.player = new Player();
 
@@ -349,12 +408,12 @@
                     this.tunnels[i].afterInit(this);
                 }
 
-                this.statusMessage = {
+                this.messages.push({
                     title: "Level " + (currentLevel + 1),
                     message: levels[currentLevel].title,
                     endsIn: +(new Date()) + 2000,
                     opacity: 1
-                };
+                });
 
                 this.speed = 30;
 
@@ -374,11 +433,15 @@
 
                 this.background(ctx);
 
-                var status = this.statusMessage;
-                if (!player.dead() && (status.endsIn > now || status.opacity > 0)) {
-                    this.showMessage(status.title, status.message, status.opacity);
-                    if (status.endsIn < now) {
-                        status.opacity -= 0.05;
+                var message = this.messages[0];
+                if (!player.dead() && message) {
+                    if (message.endsIn > now || message.opacity > 0) {
+                        this.showMessage(message.title, message.message, message.opacity);
+                        if (message.endsIn < now) {
+                            message.opacity -= 0.05;
+                        }
+                    } else {
+                        this.messages.shift();
                     }
                 }
 
@@ -436,8 +499,14 @@
 
                 this.progress(ctx, progress);
 
-                if (player.progress - levelLength > height) {
-                    this.nextLevel();
+                if (!this.won() && player.progress > levelLength) {
+                    // end of level reached, check if end size criteria is met
+                    var compare = player.compare(level.endSize);
+                    if (compare === 0) {
+                        this.nextLevel();
+                    } else {
+                        this.lose();
+                    }
                 }
             },
 
@@ -512,12 +581,13 @@
                 ctx.restore();
             },
 
-            renderMessage: function(message) {
+            renderStatus: function(message) {
                 var ctx = this.ctx;
 
                 ctx.font = "16pt Arial";
                 ctx.fillStyle = "#fff";
-                ctx.fillText(message, 20, 30);
+                ctx.textAlign = "center";
+                ctx.fillText(message, width/2, height/2);
             },
 
             nextLevel: function() {
