@@ -272,6 +272,11 @@
             }
 
             this.compare = compare;
+
+            player.color = compare < 0 ? "#aaf" :
+                           compare > 0 ? "#faa" :
+                           "#ccc";
+
             var endsIn = +new Date;
 
             if (messages.length) {
