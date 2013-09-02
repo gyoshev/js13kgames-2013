@@ -70,7 +70,7 @@
                 z-index: 2;
             }
 
-            .levelsCircles {
+            .level {
                 background: #ffac2c;
                 width: 20px;
                 height: 20px;
@@ -79,17 +79,18 @@
                 border-radius: 50%;
             }
 
-            .levelsCircles:hover {
+            .level:hover {
                 background-image:url("flare.png");
                 border: 3px solid #ffac2c;
             }
 
-            #a {
+            .notReached,
+            .notReached:hover {
                 background: #333;
                 border-color: #82c0cf;
             }
 
-            .levelsCircles .description {
+            .level .description {
                 position: absolute;
                 left: -130px;
                 font-size: 12px;
@@ -99,7 +100,7 @@
                 line-height: 0px;
             }
 
-            .levelsCircles .levelScores {
+            .level .levelScores {
                 position: absolute;
                 left: 65px;
                 font-size: 14px;
@@ -129,22 +130,19 @@
     <body>
         <canvas id="c"></canvas>
 
-        <div id="scoreDialog" style="display: none">
-            <button id="close">Close</button>
+        <div id="scoreDialog" style="display:none">
             <h1>Highscore  <span id="score">20332</span></h1>
 
-
-
             <div  class="levelsBoxes" id="levelsMap">
-                    <div class="levelsCircles" id="a"><h2 class="description">don't go near</h2><h2 class="levelScores">3212</h2></div>
-                    <div class="levelsCircles"><h2 class="description">all u can eat</h2><h2 class="levelScores">5512</h2></div>
-                    <div class="levelsCircles"><h2 class="description">big things coming</h2><h2 class="levelScores">5512</h2></div>
-                    <div class="levelsCircles"><h2 class="description">time is the limit</h2><h2 class="levelScores">5512</h2></div>
-                    <div class="levelsCircles"><h2 class="description">magic level</h2><h2 class="levelScores">5512</h2></div>
-                    <div class="levelsCircles"><h2 class="description">strange place</h2><h2 class="levelScores">5512</h2></div>
-                    <div class="levelsCircles"><h2 class="description">getting there</h2><h2 class="levelScores">5512</h2></div>
-                    <div class="levelsCircles"><h2 class="description">tunnel madness</h2><h2 class="levelScores">5512</h2></div>
-                    <div class="levelsCircles"><h2 class="description">dont be afraid</h2><h2 class="levelScores">5512</h2></div>
+                <div class="level notReached"><h2 class="description">don't go near</h2><h2 class="levelScores">3212</h2></div>
+                <div class="level notReached"><h2 class="description">all u can eat</h2><h2 class="levelScores">5512</h2></div>
+                <div class="level"><h2 class="description">big things coming</h2><h2 class="levelScores">5512</h2></div>
+                <div class="level"><h2 class="description">time is the limit</h2><h2 class="levelScores">5512</h2></div>
+                <div class="level"><h2 class="description">magic level</h2><h2 class="levelScores">5512</h2></div>
+                <div class="level"><h2 class="description">strange place</h2><h2 class="levelScores">5512</h2></div>
+                <div class="level"><h2 class="description">getting there</h2><h2 class="levelScores">5512</h2></div>
+                <div class="level"><h2 class="description">tunnel madness</h2><h2 class="levelScores">5512</h2></div>
+                <div class="level"><h2 class="description">dont be afraid</h2><h2 class="levelScores">5512</h2></div>
             </div>
 
             <div class="levelsBoxes" id="verLine"></div>
@@ -160,16 +158,10 @@
         <script src="klass.min.js"></script>
         <script src="game.js"></script>
         <script>
-            var $ = function(id) { return document.getElementById(id); };
-
-            $("close").addEventListener("click", function(e) {
-                $("scoreDialog").style.display = "none";
-            }, false);
-
             var bg = new Image();
 
             bg.onload = function() {
-                game.init($("c"));
+                game.init(document.getElementById("c"));
             };
 
             bg.src = "bg.png";
