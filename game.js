@@ -286,6 +286,8 @@
 
         }
 
+        var levelLength = 6 * height;
+
         var levels = [
             {
                 title: "Learning the ropes",
@@ -342,6 +344,16 @@
                 setup: function(game) {
                     game.player.radius = 100;
                 }
+            },
+            {
+                title: "Epilogue",
+                enemies: 1,
+                setup: function(game) {
+                    var lastEnemy = game.enemies[0];
+                    lastEnemy.x = width / 2;
+                    lastEnemy.y = -levelLength - height / 2;
+                    lastEnemy.radius = width;
+                }
             }
         ];
 
@@ -350,8 +362,6 @@
             tunnels: { type: Tunnel },
             powerups: { type: Splitter }
         };
-
-        var levelLength = 6 * height;
 
         return {
             messages: [],
@@ -381,7 +391,7 @@
             },
 
             start: function() {
-                var currentLevel = this.currentLevel;
+                var currentLevel = this.currentLevel % levels.length;
                 var level = levels[currentLevel];
 
                 this.messages.length = 0;
