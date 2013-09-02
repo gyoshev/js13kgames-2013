@@ -75,6 +75,8 @@
             ctx.lineTo(this.end, bottom);
             ctx.lineTo(width, bottom);
 
+            ctx.closePath();
+
             ctx.fillStyle = "#ea4a18";
             ctx.fill();
             ctx.lineWidth = 1;
@@ -136,6 +138,7 @@
             }
             ctx.beginPath();
             ctx.arc(this.x, this.y, radius, 0, 2 * Math.PI, false);
+            ctx.closePath();
             ctx.fillStyle = this.color;
             ctx.fill();
             ctx.lineWidth = 3;
@@ -300,7 +303,7 @@
             messages.push(message);
         }
 
-        var levelLength = 6 * height;
+        var levelLength = 4 * height;
 
         var levels = [
             {
@@ -464,31 +467,7 @@
 
                 player.x = constrain(player.x + player.speed || 0, player.radius, width - player.radius);
 
-                for (var field in gameObjects) {
-                    var array = this[field];
-                    for (var i = 0, len = array.length; i < len; i++) {
-                        var obj = array[i];
-
-                        obj.y += this.speed;
-
-                        obj.interact(player);
-
-                        if (progress < 1 && obj.top() > height) {
-                            obj.init();
-                        }
-
-                        obj.draw(ctx);
-                    }
-
-                    if (player.dead()) {
-                        this.lose();
-                    }
-                }
-
-                var tunnels = this.tunnels;
-                for (var i = 0; i < tunnels.length; i++) {
-                    tunnels[i].afterInit(this);
-                }
+                this.updateObjects(ctx, progress);
 
                 if (level && level.tick) {
                     level.tick(this);
@@ -502,13 +481,15 @@
                     player.progress += this.speed;
 
                     if (this.won()) {
-                        this.showMessage("You kinda won.", "Better luck next time!");
+                        this.showMessage("You kinda won...", "Better luck next time!");
                     }
                 } else  {
                     this.showMessage("Level failed", "Press <Space> to retry");
                 }
 
                 this.progress(ctx, progress);
+
+                this.goal(ctx);
 
                 if (!this.won() && player.progress > levelLength) {
                     // end of level reached, check if end size criteria is met
@@ -541,6 +522,53 @@
                     }
                 } else {
                     this.messages.shift();
+                }
+            },
+
+            updateObjects: function(ctx, progress) {
+                var player = this.player;
+                var speed = this.speed;
+
+                for (var field in gameObjects) {
+                    var array = this[field];
+                    for (var i = 0, len = array.length; i < len; i++) {
+                        var obj = array[i];
+
+                        obj.y += speed;
+
+                        obj.interact(player);
+
+                        if (progress < 1 && obj.top() > height) {
+                            obj.init();
+                        }
+
+                        obj.draw(ctx);
+                    }
+
+                    if (player.dead()) {
+                        this.lose();
+                    }
+                }
+
+                var tunnels = this.tunnels;
+                for (var i = 0; i < tunnels.length; i++) {
+                    tunnels[i].afterInit(this);
+                }
+            },
+
+            goal: function(ctx) {
+                var player = this.player;
+                var goalPosition = levelLength - this.worldProgress;
+
+                if (goalPosition < height) {
+                    ctx.beginPath();
+                    ctx.moveTo(0, player.y - goalPosition);
+                    ctx.lineTo(width, player.y - goalPosition);
+                    ctx.lineTo(width, player.y - goalPosition + 10);
+                    ctx.lineTo(0, player.y - goalPosition + 10);
+                    ctx.closePath();
+                    ctx.fillStyle = "#fff";
+                    ctx.fill();
                 }
             },
 
