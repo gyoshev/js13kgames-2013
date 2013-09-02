@@ -452,26 +452,14 @@
                 var progress = player.progress / levelLength;
                 var level = levels[this.currentLevel];
 
+                this.speed += constrain(this.minSpeed - this.speed, -1, 1);
+
                 this.worldProgress += this.speed;
 
                 this.background(ctx);
 
-                var message = this.messages[0];
-                if (!player.dead() && message) {
-                    if (message.endsIn > now || message.opacity > 0) {
-                        this.showMessage(message.title, message.message, message.opacity);
-                        if (message.endsIn < now) {
-                            message.opacity -= 0.05;
-                        }
-                    } else {
-                        this.messages.shift();
-                    }
-                }
-
-                if (this.speed > this.minSpeed) {
-                    this.speed -= 1;
-                } else if (this.speed < this.minSpeed) {
-                    this.speed += 1;
+                if (!player.dead()) {
+                    this.queuedMessage(ctx, now);
                 }
 
                 player.x = constrain(player.x + player.speed || 0, player.radius, width - player.radius);
@@ -517,7 +505,7 @@
                         this.showMessage("You kinda won.", "Better luck next time!");
                     }
                 } else  {
-                    this.showMessage("Game over", "Press <Space> to play again");
+                    this.showMessage("Level failed", "Press <Space> to retry");
                 }
 
                 this.progress(ctx, progress);
@@ -538,6 +526,22 @@
                 ctx.translate(0, this.worldProgress % 38);
                 ctx.fillRect(0, -38, width, height + 38);
                 ctx.translate(0, -this.worldProgress % 38);
+            },
+
+            queuedMessage: function(ctx, now) {
+                var message = this.messages[0];
+                if (!message) {
+                    return;
+                }
+
+                if (message.endsIn > now || message.opacity > 0) {
+                    this.showMessage(message.title, message.message, message.opacity);
+                    if (message.endsIn < now) {
+                        message.opacity -= 0.05;
+                    }
+                } else {
+                    this.messages.shift();
+                }
             },
 
             score: function(ctx) {
