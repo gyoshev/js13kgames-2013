@@ -267,23 +267,32 @@
             var compare = player.compare(this.endSize);
             var messages = game.messages;
 
-            if (!messages.length) {
-                var message = { endsIn: +new Date + 2000, opacity: 1 };
-
-                if (compare < 0) {
-                    message.title = "Get bigger!";
-                    message.message = "Consume blue blobs";
-                } else if (compare > 0) {
-                    message.title = "Get smaller!";
-                    message.message = "Brush off red blobs";
-                } else {
-                    message.title = "You're in good shape";
-                    message.message = "Finish the level in that size";
-                }
-
-                messages.push(message);
+            if (this.compare === compare) {
+                return;
             }
 
+            this.compare = compare;
+            var endsIn = +new Date;
+
+            if (messages.length) {
+                // get when last message ends
+                endsIn = messages[messages.length - 1].endsIn;
+            }
+
+            var message = { endsIn: endsIn + 3000, opacity: 1 };
+
+            if (compare < 0) {
+                message.title = "Get bigger!";
+                message.message = "Consume blue blobs";
+            } else if (compare > 0) {
+                message.title = "Get smaller!";
+                message.message = "Split yourself or brush off red blobs";
+            } else {
+                message.title = "You're in good shape";
+                message.message = "Finish the level in that size";
+            }
+
+            messages.push(message);
         }
 
         var levelLength = 6 * height;
@@ -299,7 +308,7 @@
                 }
             },
             {
-                title: "Don't miss the tunnels",
+                title: "Missing the gap is lethal",
                 enemies: 30,
                 tunnels: 1,
                 powerups: 1
@@ -310,8 +319,7 @@
                 tunnels: 1,
                 powerups: 1,
                 setup: function(game) {
-                    var timeLimit = 1000 * 30;
-                    this.endTime = +new Date + timeLimit; // 30s level
+                    this.endTime = +new Date + 1000 * 10; // 10s time limit
 
                     game.messages.push({
                         title: "",
