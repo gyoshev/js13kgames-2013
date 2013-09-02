@@ -540,7 +540,7 @@
 
                 var indicatorHeight = height * amountDone;
 
-                ctx.fillStyle = "#82c0cf";
+                ctx.fillStyle = "#2c7fff";
                 ctx.fillRect(width, height - indicatorHeight, hudWidth, indicatorHeight);
             },
 
