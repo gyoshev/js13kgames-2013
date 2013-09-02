@@ -266,38 +266,30 @@
                 powerups: 1,
                 setup: function() {
                     this.endTime = +new Date + 1000 * 30; // 30s level
-                    this.startTime = +new Date;
-                    this.goalAt = 1000; // px
-                    this.travelled = 0;
                 },
                 tick: function() {
-                    var timeRemaining = (this.endTime - this.startTime) / 1000;
+                    var now = +new Date;
+                    var timeRemaining = (this.endTime - now) / 1000;
 
                     if (timeRemaining < 0) {
-                        this.renderMessage(
-                            "Distance: " + this.travelled + " / " + this.goalAt + ", " +
-                            "time: 0s"
-                        );
+                        game.renderMessage("Time left: 0s");
 
-                        this.lose();
+                        game.lose();
                     } else {
-                        this.renderMessage(
-                            "Distance: " + this.travelled + " / " + this.goalAt + ", " +
-                            "time: " + timeRemaining + "s"
-                        );
+                        game.renderMessage("Time left: " + timeRemaining.toFixed(1) + "s");
                     }
                 }
             },
             {
                 title: "Don't get lost in the crowd",
-                enemies: { count: 70, minSize: 20 },
+                enemies: { count: 70, minSize: 30 },
                 powerups: 1
             },
             {
                 title: "Don't undermine your achievements",
                 powerups: 20,
-                init: function() {
-                    this.player.radius = 100;
+                setup: function(game) {
+                    game.player.radius = 100;
                 }
             }
         ];
@@ -319,7 +311,7 @@
                 canvas.height = height;
                 canvas.style.margin = "-" + height/2 + "px 0 0 -" + width/2 + "px";
 
-                this.currentLevel = 0;
+                this.currentLevel = 4;
 
                 this.ctx = canvas.getContext("2d");
 
@@ -354,7 +346,7 @@
                 }
 
                 for (var i = 0; i < levels[currentLevel].tunnels || 0; i++) {
-                    this.tunnels[i].afterInit(game);
+                    this.tunnels[i].afterInit(this);
                 }
 
                 this.statusMessage = {
@@ -365,6 +357,10 @@
                 };
 
                 this.speed = 30;
+
+                if (level.setup) {
+                    level.setup(this);
+                }
             },
 
             tick: function() {
@@ -372,6 +368,7 @@
                 var now = +(new Date());
                 var player = this.player;
                 var progress = player.progress / levelLength;
+                var level = levels[this.currentLevel];
 
                 this.worldProgress += this.speed;
 
@@ -416,7 +413,11 @@
 
                 var tunnels = this.tunnels;
                 for (var i = 0; i < tunnels.length; i++) {
-                    tunnels[i].afterInit(game);
+                    tunnels[i].afterInit(this);
+                }
+
+                if (level && level.tick) {
+                    level.tick(this);
                 }
 
                 this.score(ctx);
@@ -425,7 +426,11 @@
                     player.draw(ctx);
 
                     player.progress += this.speed;
-                } else {
+
+                    if (this.won()) {
+                        this.showMessage("You kinda won.", "Better luck next time!");
+                    }
+                } else  {
                     this.showMessage("Game over", "Press <Space> to play again");
                 }
 
@@ -507,6 +512,14 @@
                 ctx.restore();
             },
 
+            renderMessage: function(message) {
+                var ctx = this.ctx;
+
+                ctx.font = "16pt Arial";
+                ctx.fillStyle = "#fff";
+                ctx.fillText(message, 20, 30);
+            },
+
             nextLevel: function() {
                 this.currentLevel++;
 
@@ -515,6 +528,10 @@
                 } else {
                     this.win();
                 }
+            },
+
+            won: function() {
+                return !this.player.dead() && !levels[this.currentLevel];
             },
 
             win: function() {
@@ -539,7 +556,7 @@
         var key = e.keyCode;
         var player = game.player;
 
-        if (!player.dead()) {
+        if (!player.dead() && !game.won()) {
             if (key == RIGHT) {
                 player.speed = 4;
             } else if (key == LEFT) {
@@ -551,6 +568,10 @@
             }
         } else {
             if (key == SPACE) {
+                if (game.won()) {
+                    game.currentLevel = 0;
+                }
+
                 game.start();
             }
         }
