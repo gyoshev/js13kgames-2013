@@ -303,7 +303,7 @@
             messages.push(message);
         }
 
-        var levelLength = 4 * height;
+        var levelLength = 16 * height;
 
         var levels = [
             {
@@ -327,7 +327,7 @@
                 tunnels: 1,
                 powerups: 1,
                 setup: function(game) {
-                    this.endTime = +new Date + 1000 * 10; // 10s time limit
+                    this.endTime = +new Date + 1000 * 20; // 10s time limit
 
                     game.messages.push({
                         title: "",
@@ -580,7 +580,7 @@
 
                 ctx.font = "16pt Arial";
                 ctx.fillStyle = "#f1f1f1";
-                ctx.fillText(this.player.score, width - 10, 30);
+                ctx.fillText("Level score: " + this.player.score, width - 10, 30);
 
                 ctx.restore();
             },
