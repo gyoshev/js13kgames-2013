@@ -120,12 +120,16 @@
         }
     });
 
-    var Blob = klass(function() {
+    var Blob = klass(function(options) {
+
+        this.minSize = options && options.minSize || 5;
+        this.maxSize = options && options.maxSize || 30;
+
         this.init();
     })
     .methods({
         init: function() {
-            this.radius = Math.max(5, random() * 30);
+            this.radius = Math.max(this.minSize, random() * this.maxSize);
             this.x = random() * width;
             this.y = random() * height - height;
         },
@@ -303,7 +307,7 @@
             messages.push(message);
         }
 
-        var levelLength = 16 * height;
+        var levelLength = 14 * height;
 
         var levels = [
             {
@@ -363,11 +367,11 @@
             },
             {
                 title: "Epilogue",
-                enemies: 1,
+                enemies: { count: 60, minSize: 4, maxSize: 8 },
                 setup: function(game) {
                     var lastEnemy = game.enemies[0];
                     lastEnemy.x = width / 2;
-                    lastEnemy.y = -levelLength - height / 2;
+                    lastEnemy.y = -levelLength - height / 1.7;
                     lastEnemy.radius = width;
                 }
             }
@@ -390,7 +394,7 @@
                 canvas.height = height;
                 canvas.style.margin = "-" + height/2 + "px 0 0 -" + width/2 + "px";
 
-                this.currentLevel = 0;
+                this.currentLevel = 5;
 
                 this.ctx = canvas.getContext("2d");
 
@@ -420,12 +424,15 @@
 
                 this.player = new Player();
 
+                this.startWorldProgress = this.worldProgress || 0;
+
                 for (var field in gameObjects) {
                     var array = [];
                     var objectInfo = gameObjects[field];
-                    var count = level[field] && level[field].count || level[field] || 0;
+                    var options = level[field]
+                    var count = options && options.count || options || 0;
                     for (var i = 0; i < count; i++) {
-                        array.push(new objectInfo.type());
+                        array.push(new objectInfo.type(options));
                     }
                     this[field] = array;
                 }
@@ -475,12 +482,14 @@
 
                 this.score(ctx);
 
-                if (this.won()) {
-                    this.showMessage("You kinda won...", "Better luck next time!");
-                } else if (!player.dead()) {
+                if (!player.dead() || this.won()) {
                     player.draw(ctx);
 
                     player.progress += this.speed;
+
+                    if (this.won()) {
+                        this.showMessage("You kinda won...", "Better luck next time!");
+                    }
                 } else  {
                     this.showMessage("Level failed", "Press <Space> to retry");
                 }
@@ -527,6 +536,8 @@
                 var player = this.player;
                 var speed = this.speed;
 
+                var recycle = levelLength - this.worldProgress + this.startWorldProgress - 2*height > 0;
+
                 for (var field in gameObjects) {
                     var array = this[field];
                     for (var i = 0, len = array.length; i < len; i++) {
@@ -536,7 +547,7 @@
 
                         obj.interact(player);
 
-                        if (progress < 1 && obj.top() > height) {
+                        if (recycle && progress * height < levelLength && obj.top() > height) {
                             obj.init();
                         }
 
@@ -551,22 +562,6 @@
                 var tunnels = this.tunnels;
                 for (var i = 0; i < tunnels.length; i++) {
                     tunnels[i].afterInit(this);
-                }
-            },
-
-            goal: function(ctx) {
-                var player = this.player;
-                var goalPosition = levelLength - this.worldProgress;
-
-                if (goalPosition < height) {
-                    ctx.beginPath();
-                    ctx.moveTo(0, player.y - goalPosition);
-                    ctx.lineTo(width, player.y - goalPosition);
-                    ctx.lineTo(width, player.y - goalPosition + 10);
-                    ctx.lineTo(0, player.y - goalPosition + 10);
-                    ctx.closePath();
-                    ctx.fillStyle = "#fff";
-                    ctx.fill();
                 }
             },
 
@@ -595,6 +590,23 @@
 
                 ctx.fillStyle = "#2c7fff";
                 ctx.fillRect(width, height - indicatorHeight, hudWidth, indicatorHeight);
+
+            },
+
+            goal: function(ctx) {
+                var player = this.player;
+                var goalPosition = levelLength - this.worldProgress + this.startWorldProgress;
+
+                if (goalPosition < height) {
+                    ctx.beginPath();
+                    ctx.moveTo(0, player.y - goalPosition);
+                    ctx.lineTo(width, player.y - goalPosition);
+                    ctx.lineTo(width, player.y - goalPosition + 10);
+                    ctx.lineTo(0, player.y - goalPosition + 10);
+                    ctx.closePath();
+                    ctx.fillStyle = "#fff";
+                    ctx.fill();
+                }
             },
 
             accelerate: function() {
