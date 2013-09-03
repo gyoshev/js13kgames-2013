@@ -437,7 +437,7 @@
                 this.messages.push({
                     title: "Level " + (currentLevel + 1),
                     message: levels[currentLevel].title,
-                    endsIn: +(new Date()) + 2000,
+                    endsIn: +(new Date()) + 4000,
                     opacity: 1
                 });
 
@@ -475,14 +475,12 @@
 
                 this.score(ctx);
 
-                if (!player.dead()) {
+                if (this.won()) {
+                    this.showMessage("You kinda won...", "Better luck next time!");
+                } else if (!player.dead()) {
                     player.draw(ctx);
 
                     player.progress += this.speed;
-
-                    if (this.won()) {
-                        this.showMessage("You kinda won...", "Better luck next time!");
-                    }
                 } else  {
                     this.showMessage("Level failed", "Press <Space> to retry");
                 }
@@ -656,7 +654,7 @@
             },
 
             won: function() {
-                return !this.player.dead() && !levels[this.currentLevel];
+                return !levels[this.currentLevel];
             },
 
             win: function() {
@@ -676,19 +674,20 @@
     }
 
     var UP = 38, DOWN = 40, LEFT = 37, RIGHT = 39, SPACE = 32;
+    var A = 65, S = 83, D = 68, W = 87;
 
     on("keydown", function(e) {
         var key = e.keyCode;
         var player = game.player;
 
         if (!player.dead() && !game.won()) {
-            if (key == RIGHT) {
+            if (key == RIGHT || key == D) {
                 player.speed = 4;
-            } else if (key == LEFT) {
+            } else if (key == LEFT || key == A) {
                 player.speed = -4;
-            } else if (key == UP) {
+            } else if (key == UP || key == W) {
                 game.accelerate();
-            } else if (key == DOWN) {
+            } else if (key == DOWN || key == S) {
                 game.decelerate();
             }
         } else {
@@ -700,14 +699,13 @@
                 game.start();
             }
         }
-
     });
 
     on("keyup", function(e) {
         var key = e.keyCode;
-        if (key == UP || key == DOWN) {
+        if (key == UP || key == DOWN || key == W || key == S) {
             game.normalize();
-        } else if (key == LEFT || key == RIGHT) {
+        } else if (key == LEFT || key == RIGHT || key == A || key == D) {
             game.player.speed = 0;
         }
     });
