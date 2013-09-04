@@ -324,9 +324,9 @@
                 title: "Eat your way to the top",
                 enemies: 40,
                 powerups: 6,
-                endSize: {
-                    min: 5,
-                    max: 10
+				endSize: {
+                    min: 15,
+                    max: 25
                 },
                 tick: function(game) {
                     var enemies = game.enemies;
@@ -351,6 +351,10 @@
             {
                 title: "Missing the gap is lethal",
                 enemies: 30,
+                endSize: {
+                    min: 20,
+                    max: 40
+                },
                 tunnels: 1,
                 powerups: 1
             },
@@ -447,7 +451,7 @@
                 canvas.height = height;
                 canvas.style.margin = "-" + height/2 + "px 0 0 -" + width/2 + "px";
 
-                this.currentLevel = 5;
+                this.currentLevel = 3;
 
                 this.ctx = canvas.getContext("2d");
 
