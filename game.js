@@ -307,10 +307,11 @@
             messages.push(message);
         }
 
+        // level array. all levels are scriptable through the setup/tick callbacks
         var levels = [
             {
                 title: "Learning the ropes",
-				lenght: 34,
+                lenght: 34,
                 enemies: 30,
                 powerups: 1,
                 endSize: {
@@ -322,7 +323,7 @@
                 title: "Eat your way to the top",
                 enemies: 40,
                 powerups: 6,
-				endSize: {
+                endSize: {
                     min: 5,
                     max: 10
                 },
@@ -331,7 +332,6 @@
                     var min = 5;
                     var max = 30;
                     var mid = (min + (max - min) / 2) + 5;
-					
 
                     for (var i = 0; i < enemies.length; i++) {
                         var r = enemies[i].radius;
@@ -361,12 +361,9 @@
                 setup: function(game) {
                     this.endTime = +new Date + 1000 * 30; // 10s time limit
 
-                    game.messages.push({
-                        title: "",
-                        message: "",
-                        endsIn: this.endTime,
-                        opacity: 1
-                    });
+                    game.messages[0].endsIn = this.endTime;
+
+                    this.tick(game);
                 },
                 tick: function(game) {
                     var now = +new Date;
@@ -389,7 +386,7 @@
             {
                 title: "Don't undermine your achievements",
                 powerups: 20,
-				endSize: {
+                endSize: {
                     min: 40,
                     max: 100
                 },
