@@ -285,10 +285,15 @@
 
     var ScoresDialog = klass({
         render: function(levels) {
-            var info = this.processLevels(levels);
-            var wrapper = document.createElement("div");
-            wrapper.id = "scores";
+            var wrapper = this.wrapper;
 
+            if (!this.wrapper) {
+                wrapper = document.createElement("div");
+                wrapper.id = "scores";
+                document.body.appendChild(wrapper);
+            }
+
+            var info = this.processLevels(levels);
             wrapper.innerHTML =
                 "<h1>Highscore <span id='score'>" + info.totalScore + "</span></h1>" +
                 "<ul class='levels'>" +
@@ -297,8 +302,6 @@
                 "<button><u>R</u>estart</button>"
 
             this.wrapper = wrapper;
-
-            document.body.appendChild(wrapper);
         },
 
         toggle: function(shown) {
@@ -308,11 +311,12 @@
         processLevels: function(levels) {
             var total = 0;
             var html = "";
+            var scores = localStorage.getObject("scores") || {};
 
             for (var i = levels.length-1; i >= 0; i--) {
                 var level = levels[i];
-                var score = level.score || 0;
-                var reached = level.reached;
+                var score = level.score || scores[i] || 0;
+                var reached = level.reached || (i > 0 && scores[i - 1]);
 
                 total += score;
 
@@ -520,7 +524,7 @@
                 canvas.height = height;
                 canvas.style.margin = "-" + height/2 + "px 0 0 -" + width/2 + "px";
 
-                this.currentLevel = 3;
+                this.currentLevel = 0;
 
                 this.ctx = canvas.getContext("2d");
 
@@ -772,6 +776,7 @@
             pause: function() {
                 this.paused = !this.paused;
 
+                highScores.render(levels);
                 highScores.toggle(this.paused);
             },
 
@@ -809,7 +814,19 @@
                 ctx.fillText(message, width/2, height/2);
             },
 
+            recordScore: function() {
+                var score = this.player.score;
+
+                levels[this.currentLevel].score = score;
+
+                var scores = localStorage.getObject("scores") || {};
+                scores[this.currentLevel] = score;
+                localStorage.setObject("scores", scores);
+            },
+
             nextLevel: function() {
+                this.recordScore();
+
                 this.currentLevel++;
 
                 if (this.currentLevel < levels.length) {
