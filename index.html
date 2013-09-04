@@ -29,7 +29,7 @@
                 margin: -350px 0 0 -250px;
                 border: 8px solid #394344;
                 background: rgba(64,75,77,0.98);
-                font-family: "Arial";
+                font-family: Arial, sans-serif;
             }
 
             h1 {
@@ -43,115 +43,99 @@
                 margin-left: 25px;
             }
 
-            h3 {
-                position: absolute;
-                bottom: 80px;
-                left: 36%;
-                color: #ccc;
-                font-size: 17px;
+            .levels {
+                margin: 0;
+                padding: 0;
+                list-style: none;
             }
 
-            h4 {
-                position: absolute;
-                bottom: 30px;
-                left: 14%;
-                color: #b3b3b3;
-                font-size: 14px;
-            }
-
-            .levelsBoxes {
-                width: 30px;
-                hight: 500px;
-                position: absolute;
-            }
-
-            #levelsMap {
-                left: 50%;
-                z-index: 2;
-            }
-
-            .level {
+            .levels > li {
                 background: #ffac2c;
+                font-weight: bold;
                 width: 20px;
                 height: 20px;
-                margin-bottom: 25px;
+                margin: 0 0 25px 235px;
                 border: 3px solid #ea4a18;
                 border-radius: 50%;
+                position: relative;
             }
 
-            .level:hover {
+            .levels > li:before {
+                content: "";
+                display: block;
+                width: 1px;
+                height: 25px;
+                position: absolute;
+                bottom: 22px;
+                left: 8px;
+                border-left: 3px solid #ea4a18;
+            }
+
+            .levels > .notReached:before {
+                border-left-color: #fff;
+            }
+
+            .levels > li:first-child:before {
+                display: none;
+            }
+
+            .levels > li:hover {
                 background-image:url("flare.png");
                 border: 3px solid #ffac2c;
             }
 
-            .notReached,
-            .notReached:hover {
+            .levels > .notReached,
+            .levels > .notReached:hover {
                 background: #333;
                 border-color: #82c0cf;
             }
 
-            .level .description {
+            .levels .description {
                 position: absolute;
-                left: -130px;
+                left: -150px;
                 font-size: 12px;
-                width: 110px;
+                line-height: 13px;
+                width: 120px;
+                padding: 4px 110px 4px 10px;
                 text-align: right;
                 color: #ea4a18;
-                line-height: 0px;
             }
 
-            .level .levelScores {
+            .levels .description:hover {
+                cursor: pointer;
+                color: #fff;
+            }
+
+            .levels .notReached .description:hover {
+                cursor: pointer;
+                color: #fff;
+            }
+
+            .levels .score {
                 position: absolute;
-                left: 65px;
+                right: 0;
                 font-size: 14px;
                 color: #ff931e;
-                line-height: 0px;
-            }
-
-            #verLine {
-                left: 261px;
-                line-hight: 200px;
-                hight: 200px;
-                width: 10px;
-                min-height: 60%;
-                border-left: 3px solid #ea4a18;
-            }
-
-            #verLineTop {
-                left: 261px;
-                line-hight: 200px;
-                hight: 200px;
-                width: 10px;
-                min-height: 10%;
-                border-left: 3px solid #fff;
             }
         </style>
     </head>
     <body>
         <canvas id="c"></canvas>
 
-        <div id="scores" style="display:none">
+        <div id="scores" style="display: none">
             <h1>Highscore <span id="score">20332</span></h1>
 
-            <div  class="levelsBoxes" id="levelsMap">
-                <div class="level notReached"><h2 class="description">don't go near</h2><h2 class="levelScores">3212</h2></div>
-                <div class="level notReached"><h2 class="description">all u can eat</h2><h2 class="levelScores">5512</h2></div>
-                <div class="level"><h2 class="description">big things coming</h2><h2 class="levelScores">5512</h2></div>
-                <div class="level"><h2 class="description">time is the limit</h2><h2 class="levelScores">5512</h2></div>
-                <div class="level"><h2 class="description">magic level</h2><h2 class="levelScores">5512</h2></div>
-                <div class="level"><h2 class="description">strange place</h2><h2 class="levelScores">5512</h2></div>
-                <div class="level"><h2 class="description">getting there</h2><h2 class="levelScores">5512</h2></div>
-                <div class="level"><h2 class="description">tunnel madness</h2><h2 class="levelScores">5512</h2></div>
-                <div class="level"><h2 class="description">dont be afraid</h2><h2 class="levelScores">5512</h2></div>
-            </div>
-
-            <div class="levelsBoxes" id="verLine"></div>
-
-            <div class="levelsBoxes" id="verLineTop"></div>
-
-            <h3>choose your battle</h3>
-
-            <h4>Your highscore is made of the best scores each level</h4>
+            <ul class="levels" id="levelsMap">
+                <li class="notReached"><a class="description">don't go near<span class="score">3212</span></a></li>
+                <li class="notReached"><a class="description">all u can eat<span class="score">5512</span></a></li>
+                <li><a class="description">big things coming<span class="score">5512</span></a></li>
+                <li><a class="description">time is the limit<span class="score">5512</span></a></li>
+                <li><a class="description">magic level<span class="score">5512</span></a></li>
+                <li><a class="description">strange place<span class="score">5512</span></a></li>
+                <li><a class="description">getting there<span class="score">5512</span></a></li>
+                <li><a class="description">tunnel madness<span class="score">5512</span></a></li>
+                <li><a class="description">dont be afraid<span class="score">5512</span></a></li>
+            </ul>
 
         </div>
 
