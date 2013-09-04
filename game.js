@@ -273,16 +273,17 @@
             var player = game.player;
             var compare = player.compare(this.endSize);
             var messages = game.messages;
+            var color = compare < 0 ? "#99f" :
+                        compare > 0 ? "#f99" :
+                        "#ccc";
 
-            if (this.compare === compare) {
+            if (this.compare === compare && player.color == color) {
                 return;
             }
 
             this.compare = compare;
 
-            player.color = compare < 0 ? "#aaf" :
-                           compare > 0 ? "#faa" :
-                           "#ccc";
+            player.color = color;
 
             var endsIn = +new Date;
 
