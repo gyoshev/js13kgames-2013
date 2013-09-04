@@ -395,6 +395,7 @@
             {
                 title: "Epilogue",
                 enemies: { count: 60, minSize: 4, maxSize: 8 },
+                length: 5*height,
                 setup: function(game) {
                     var lastEnemy = game.enemies[0];
                     lastEnemy.x = width / 2;
@@ -409,6 +410,8 @@
             tunnels: { type: Tunnel },
             powerups: { type: Splitter }
         };
+
+        var defaultLevelLength = 14 * height;
 
         return {
             messages: [],
@@ -501,12 +504,14 @@
 
                 if (!level.length) {
                     // default level length
-                    level.length = 14 * height;
+                    level.length = defaultLevelLength;
                 }
 
                 if (level.setup) {
                     level.setup(this);
                 }
+
+                this.levelLength = level.length;
             },
 
             tick: function() {
@@ -514,7 +519,7 @@
                 var now = +(new Date());
                 var player = this.player;
                 var level = levels[this.currentLevel];
-                var progress = player.progress / level.length;
+                var progress = level ? player.progress / level.length : 1;
 
                 this.speed += constrain(this.minSpeed - this.speed, -1, 1);
 
@@ -590,8 +595,7 @@
                 var player = this.player;
                 var speed = this.speed;
                 var level = levels[this.currentLevel];
-
-                var recycle = progress * height < level.length && this.goalPosition() - 2*height > 0;
+                var recycle = (progress * height < this.levelLength) && (this.goalPosition() > 2*height);
 
                 for (var field in gameObjects) {
                     var array = this[field];
@@ -649,8 +653,7 @@
             },
 
             goalPosition: function() {
-                var level = levels[this.currentLevel];
-                return level.length - this.worldProgress + this.startWorldProgress;
+                return this.levelLength - this.worldProgress + this.startWorldProgress;
             },
 
             goal: function(ctx) {
