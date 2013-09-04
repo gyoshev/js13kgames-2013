@@ -470,10 +470,6 @@
 
                 this.minSpeed = 2;
 
-                if (level.endSize && !level.tick) {
-                    level.tick = sizeTick;
-                }
-
                 this.player = new Player();
 
                 this.startWorldProgress = this.worldProgress || 0;
@@ -535,8 +531,14 @@
 
                 this.updateObjects(ctx, progress);
 
-                if (level && level.tick) {
-                    level.tick(this);
+                if (level) {
+                    if (level.endSize) {
+                        sizeTick.call(level, this);
+                    }
+
+                    if (level.tick) {
+                        level.tick(this);
+                    }
                 }
 
                 this.score(ctx);
