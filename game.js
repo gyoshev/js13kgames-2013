@@ -288,11 +288,16 @@
             var endsIn = +new Date;
 
             if (messages.length) {
-                // get when last message ends
-                endsIn = messages[messages.length - 1].endsIn;
+                if (messages[messages.length - 1].aboutSizing) {
+                    // remove last message about sizing
+                    messages.pop();
+                } else {
+                    // queue after last message
+                    endsIn = messages[messages.length - 1].endsIn;
+                }
             }
 
-            var message = { endsIn: endsIn + 3000, opacity: 1 };
+            var message = { endsIn: endsIn + 3000, opacity: 1, aboutSizing: true };
 
             if (compare < 0) {
                 message.title = "Get bigger!";
