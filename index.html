@@ -71,7 +71,7 @@
                 border-left: 3px solid #ea4a18;
             }
 
-            .levels > .notReached:before {
+            .levels > .unavailable:before {
                 border-left-color: #fff;
             }
 
@@ -79,13 +79,12 @@
                 display: none;
             }
 
-            .levels > li:hover {
+            .levels > .reached:hover {
                 background-image:url("flare.png");
                 border: 3px solid #ffac2c;
             }
 
-            .levels > .notReached,
-            .levels > .notReached:hover {
+            .levels > .unavailable {
                 background: #333;
                 border-color: #82c0cf;
             }
@@ -99,14 +98,10 @@
                 padding: 4px 110px 4px 10px;
                 text-align: right;
                 color: #ea4a18;
+                cursor: default;
             }
 
-            .levels .description:hover {
-                cursor: pointer;
-                color: #fff;
-            }
-
-            .levels .notReached .description:hover {
+            .levels .reached .description:hover {
                 cursor: pointer;
                 color: #fff;
             }
@@ -121,23 +116,6 @@
     </head>
     <body>
         <canvas id="c"></canvas>
-
-        <div id="scores" style="display: none">
-            <h1>Highscore <span id="score">20332</span></h1>
-
-            <ul class="levels" id="levelsMap">
-                <li class="notReached"><a class="description">don't go near<span class="score">3212</span></a></li>
-                <li class="notReached"><a class="description">all u can eat<span class="score">5512</span></a></li>
-                <li><a class="description">big things coming<span class="score">5512</span></a></li>
-                <li><a class="description">time is the limit<span class="score">5512</span></a></li>
-                <li><a class="description">magic level<span class="score">5512</span></a></li>
-                <li><a class="description">strange place<span class="score">5512</span></a></li>
-                <li><a class="description">getting there<span class="score">5512</span></a></li>
-                <li><a class="description">tunnel madness<span class="score">5512</span></a></li>
-                <li><a class="description">dont be afraid<span class="score">5512</span></a></li>
-            </ul>
-
-        </div>
 
         <script src="klass.min.js"></script>
         <script src="game.js"></script>

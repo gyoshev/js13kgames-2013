@@ -42,6 +42,21 @@
         return distanceSquared < (blob.radius * blob.radius);
     }
 
+    // local storage helpers - source: http://stackoverflow.com/questions/2010892/storing-objects-in-html5-localstorage/3146971#3146971
+    // also https://github.com/jackrugile/spacepi-js13k/blob/master/source.html#L1422 :)
+    Storage.prototype.setObject = function(key, value) {
+        this.setItem(key, JSON.stringify(value));
+    };
+
+    Storage.prototype.getObject = function(key) {
+        var value = this.getItem(key);
+        return value && JSON.parse(value);
+    };
+
+    Storage.prototype.removeObject = function(key) {
+        this.removeItem(key);
+    };
+
     var Tunnel = klass(function() {
         this.width = 90;
         this.height = 20;
@@ -268,6 +283,50 @@
         }
     });
 
+    var ScoresDialog = klass({
+        render: function(levels) {
+            var info = this.processLevels(levels);
+            var wrapper = document.createElement("div");
+            wrapper.id = "scores";
+
+            wrapper.innerHTML =
+                "<h1>Highscore <span id='score'>" + info.totalScore + "</span></h1>" +
+                "<ul class='levels'>" +
+                    info.html +
+                "</ul>" +
+                "<button><u>R</u>estart</button>"
+
+            this.wrapper = wrapper;
+
+            document.body.appendChild(wrapper);
+        },
+
+        toggle: function(shown) {
+            this.wrapper.style.display = shown ? "block" : "none";
+        },
+
+        processLevels: function(levels) {
+            var total = 0;
+            var html = "";
+
+            for (var i = levels.length-1; i >= 0; i--) {
+                var level = levels[i];
+                var score = level.score || 0;
+                var reached = level.reached;
+
+                total += score;
+
+                html += "<li class='" + (reached ? "reached" : "unavailable") + "' data-id='" + i + "'>" +
+                            "<a class='description'>" + (reached ? level.title : "???") +
+                             (score ? "<span class='score'>" + score + "</span>" : "") +
+                            "</a>" +
+                        "</li>";
+            }
+
+            return { html: html, totalScore: total };
+        }
+    });
+
     var game = (function() {
         function sizeTick(game) {
             var player = game.player;
@@ -317,6 +376,7 @@
         var levels = [
             {
                 title: "Learning the ropes",
+                reached: true,
                 lenght: 34,
                 enemies: 30,
                 powerups: 1,
@@ -329,7 +389,7 @@
                 title: "Eat your way to the top",
                 enemies: 40,
                 powerups: 6,
-				endSize: {
+                endSize: {
                     min: 15,
                     max: 25
                 },
@@ -425,6 +485,10 @@
 
         var defaultLevelLength = 14 * height;
 
+        var highScores = new ScoresDialog();
+
+        highScores.render(levels);
+
         return {
             messages: [],
 
@@ -484,6 +548,9 @@
 
                 this.player = new Player();
 
+                this.paused = false;
+                highScores.toggle(false);
+
                 this.startWorldProgress = this.worldProgress || 0;
 
                 for (var field in gameObjects) {
@@ -528,6 +595,10 @@
                 var player = this.player;
                 var level = levels[this.currentLevel];
                 var progress = level ? player.progress / level.length : 1;
+
+                if (!player.dead() && this.paused) {
+                    return;
+                }
 
                 this.speed += constrain(this.minSpeed - this.speed, -1, 1);
 
@@ -698,6 +769,12 @@
                 this.minSpeed = 2;
             },
 
+            pause: function() {
+                this.paused = !this.paused;
+
+                highScores.toggle(this.paused);
+            },
+
             showMessage: function (title, message, opacity) {
                 var ctx = this.ctx;
 
@@ -763,13 +840,17 @@
     }
 
     var UP = 38, DOWN = 40, LEFT = 37, RIGHT = 39, SPACE = 32;
-    var A = 65, S = 83, D = 68, W = 87;
+    var A = 65, S = 83, D = 68, W = 87, P = 80, R = 82;
 
     on("keydown", function(e) {
         var key = e.keyCode;
         var player = game.player;
 
-        if (!player.dead() && !game.won()) {
+        if (key == P) {
+            game.pause();
+        } else if (key == R && game.paused) {
+            game.start();
+        } else if (!player.dead() && !game.won()) {
             if (key == RIGHT || key == D) {
                 player.speed = 4;
             } else if (key == LEFT || key == A) {
@@ -796,6 +877,30 @@
             game.normalize();
         } else if (key == LEFT || key == RIGHT || key == A || key == D) {
             game.player.speed = 0;
+        }
+    });
+
+    function closest(node, tagName) {
+        var body = document.body;
+
+        while (node != body && node.nodeName.toLowerCase() != tagName) {
+            node = node.parentNode;
+        }
+
+        if (node == body) {
+            return false;
+        } else {
+            return node;
+        }
+    }
+
+    on("click", function(e) {
+        var target = closest(e.target, "li");
+
+        if (target && target.className == "reached") {
+            var level = target.getAttribute("data-id");
+            game.currentLevel = level;
+            game.start();
         }
     });
 
