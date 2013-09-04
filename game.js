@@ -310,26 +310,27 @@
         var levels = [
             {
                 title: "Learning the ropes",
+				lenght: 34,
                 enemies: 30,
                 powerups: 1,
                 endSize: {
-                    min: 50,
-                    max: 100
+                    min: 40,
+                    max: 60
                 }
             },
             {
                 title: "Eat your way to the top",
                 enemies: 40,
-                powerups: 3,
+                powerups: 6,
 				endSize: {
-                    min: 15,
-                    max: 30
+                    min: 5,
+                    max: 10
                 },
                 tick: function(game) {
                     var enemies = game.enemies;
                     var min = 5;
                     var max = 30;
-                    var mid = min + (max - min) / 2;
+                    var mid = (min + (max - min) / 2) + 5;
 					
 
                     for (var i = 0; i < enemies.length; i++) {
@@ -354,11 +355,11 @@
             },
             {
                 title: "Don't catch your breath",
-                enemies: 30,
+                enemies: { count: 30, maxSize: 45 },
                 tunnels: 1,
                 powerups: 1,
                 setup: function(game) {
-                    this.endTime = +new Date + 1000 * 20; // 10s time limit
+                    this.endTime = +new Date + 1000 * 30; // 10s time limit
 
                     game.messages.push({
                         title: "",
@@ -382,12 +383,16 @@
             },
             {
                 title: "Don't get lost in the crowd",
-                enemies: { count: 70, minSize: 30 },
+                enemies: { count: 60, minSize: 30, maxSize: 40 },
                 powerups: 1
             },
             {
                 title: "Don't undermine your achievements",
                 powerups: 20,
+				endSize: {
+                    min: 40,
+                    max: 100
+                },
                 setup: function(game) {
                     game.player.radius = 100;
                 }
@@ -444,7 +449,7 @@
                 canvas.height = height;
                 canvas.style.margin = "-" + height/2 + "px 0 0 -" + width/2 + "px";
 
-                this.currentLevel = 1;
+                this.currentLevel = 5;
 
                 this.ctx = canvas.getContext("2d");
 
