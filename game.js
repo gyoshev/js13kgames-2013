@@ -307,8 +307,6 @@
             messages.push(message);
         }
 
-        var levelLength = 14 * height;
-
         var levels = [
             {
                 title: "Learning the ropes",
@@ -395,7 +393,7 @@
                 setup: function(game) {
                     var lastEnemy = game.enemies[0];
                     lastEnemy.x = width / 2;
-                    lastEnemy.y = -levelLength - height / 1.7;
+                    lastEnemy.y = -this.length - height / 1.7;
                     lastEnemy.radius = width;
                 }
             }
@@ -496,6 +494,11 @@
 
                 this.speed = 30;
 
+                if (!level.length) {
+                    // default level length
+                    level.length = 14 * height;
+                }
+
                 if (level.setup) {
                     level.setup(this);
                 }
@@ -505,8 +508,8 @@
                 var ctx = this.ctx;
                 var now = +(new Date());
                 var player = this.player;
-                var progress = player.progress / levelLength;
                 var level = levels[this.currentLevel];
+                var progress = player.progress / level.length;
 
                 this.speed += constrain(this.minSpeed - this.speed, -1, 1);
 
@@ -544,7 +547,7 @@
 
                 this.goal(ctx);
 
-                if (!this.won() && player.progress > levelLength) {
+                if (!this.won() && player.progress > level.length) {
                     // end of level reached, check if end size criteria is met
                     var compare = player.compare(level.endSize);
                     if (compare === 0) {
@@ -581,8 +584,9 @@
             updateObjects: function(ctx, progress) {
                 var player = this.player;
                 var speed = this.speed;
+                var level = levels[this.currentLevel];
 
-                var recycle = levelLength - this.worldProgress + this.startWorldProgress - 2*height > 0;
+                var recycle = progress * height < level.length && this.goalPosition() - 2*height > 0;
 
                 for (var field in gameObjects) {
                     var array = this[field];
@@ -593,7 +597,7 @@
 
                         obj.interact(player);
 
-                        if (recycle && progress * height < levelLength && obj.top() > height) {
+                        if (recycle && obj.top() > height) {
                             obj.init();
                         }
 
@@ -639,9 +643,14 @@
 
             },
 
+            goalPosition: function() {
+                var level = levels[this.currentLevel];
+                return level.length - this.worldProgress + this.startWorldProgress;
+            },
+
             goal: function(ctx) {
                 var player = this.player;
-                var goalPosition = levelLength - this.worldProgress + this.startWorldProgress;
+                var goalPosition = this.goalPosition();
 
                 if (goalPosition < height) {
                     ctx.beginPath();
