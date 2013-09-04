@@ -321,11 +321,16 @@
                 title: "Eat your way to the top",
                 enemies: 40,
                 powerups: 3,
+				endSize: {
+                    min: 15,
+                    max: 30
+                },
                 tick: function(game) {
                     var enemies = game.enemies;
                     var min = 5;
                     var max = 30;
                     var mid = min + (max - min) / 2;
+					
 
                     for (var i = 0; i < enemies.length; i++) {
                         var r = enemies[i].radius;
@@ -436,7 +441,7 @@
                 canvas.height = height;
                 canvas.style.margin = "-" + height/2 + "px 0 0 -" + width/2 + "px";
 
-                this.currentLevel = 0;
+                this.currentLevel = 1;
 
                 this.ctx = canvas.getContext("2d");
 
