@@ -123,7 +123,7 @@
     var Blob = klass(function(options) {
 
         this.minSize = options && options.minSize || 5;
-        this.maxSize = options && options.maxSize || 30;
+        this.maxSize = options && options.maxSize || 60;
 
         this.init();
     })
@@ -320,6 +320,30 @@
                 }
             },
             {
+                title: "Eat your way to the top",
+                enemies: 40,
+                powerups: 3,
+                tick: function(game) {
+                    var enemies = game.enemies;
+                    var min = 5;
+                    var max = 30;
+                    var mid = min + (max - min) / 2;
+
+                    for (var i = 0; i < enemies.length; i++) {
+                        var r = enemies[i].radius;
+                        if (min < r && r < max) {
+                            if (r > mid) {
+                                r = max;
+                            } else {
+                                r = min;
+                            }
+
+                            enemies[i].radius = r;
+                        }
+                    }
+                }
+            },
+            {
                 title: "Missing the gap is lethal",
                 enemies: 30,
                 tunnels: 1,
@@ -386,6 +410,26 @@
         return {
             messages: [],
 
+            preload: function(images, whenDone) {
+                var loadCount = images.length;
+                var that = this;
+                var image, i;
+
+                function imageLoad() {
+                    loadCount--;
+                    if (!loadCount) {
+                        whenDone.call(that, images);
+                    }
+                }
+
+                for (i = 0; i < images.length; i++) {
+                    image = new Image();
+                    image.onload = imageLoad;
+                    image.src = images[i];
+                    images[i] = image;
+                }
+            },
+
             init: function(canvas) {
                 this.hudWidth = 10;
 
@@ -394,20 +438,22 @@
                 canvas.height = height;
                 canvas.style.margin = "-" + height/2 + "px 0 0 -" + width/2 + "px";
 
-                this.currentLevel = 5;
+                this.currentLevel = 0;
 
                 this.ctx = canvas.getContext("2d");
 
-                this.backgroundPattern = this.ctx.createPattern(bg, "repeat");
+                this.preload([ "bg.png" ], function(images) {
+                    this.backgroundPattern = this.ctx.createPattern(images[0], "repeat");
 
-                game.start();
+                    game.start();
 
-                requestAnimationFrame(function step(timestamp) {
-                    game.tick();
-                    requestAnimationFrame(step);
+                    requestAnimationFrame(function step(timestamp) {
+                        game.tick();
+                        requestAnimationFrame(step);
+                    });
+
+                    this.worldProgress = 0;
                 });
-
-                this.worldProgress = 0;
             },
 
             start: function() {

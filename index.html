@@ -158,13 +158,7 @@
         <script src="klass.min.js"></script>
         <script src="game.js"></script>
         <script>
-            var bg = new Image();
-
-            bg.onload = function() {
-                game.init(document.getElementById("c"));
-            };
-
-            bg.src = "bg.png";
+            game.init(document.getElementById("c"));
         </script>
     </body>
 </html>
