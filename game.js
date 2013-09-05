@@ -957,10 +957,14 @@
         }
     });
 
+    function nodeName(node) {
+        return node.nodeName.toLowerCase();
+    }
+
     function closest(node, tagName) {
         var body = document.body;
 
-        while (node != body && node.nodeName.toLowerCase() != tagName) {
+        while (node != body && nodeName(node) != tagName) {
             node = node.parentNode;
         }
 
@@ -972,10 +976,15 @@
     }
 
     on("click", function(e) {
-        var target = closest(e.target, "li");
+        var target = e.target;
+        var li = closest(target, "li");
 
-        if (target && target.className == "reached") {
-            var level = target.getAttribute("data-id");
+        if (nodeName(target) == "button") {
+            // restart button
+            game.start();
+        } else if (li && li.className == "reached") {
+            // level selection
+            var level = li.getAttribute("data-id");
             game.currentLevel = level;
             game.start();
         }
