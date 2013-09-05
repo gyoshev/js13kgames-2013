@@ -564,6 +564,9 @@
 
         highScores.render(levels);
 
+        var bonusTimeLimit = 60 * 1000;
+        var fullBonus = 5000;
+
         return {
             messages: [],
 
@@ -616,6 +619,7 @@
             start: function() {
                 var currentLevel = this.currentLevel % levels.length;
                 var level = levels[currentLevel];
+                var now = +new Date();
 
                 this.messages.length = 0;
 
@@ -627,6 +631,10 @@
                 highScores.toggle(false);
 
                 this.startWorldProgress = this.worldProgress || 0;
+
+                this.startTime = now;
+                this.bonusPoints = fullBonus;
+                this.timeOffset = 0;
 
                 for (var field in gameObjects) {
                     var array = [];
@@ -646,7 +654,7 @@
                 this.messages.push({
                     title: "Level " + (currentLevel + 1),
                     message: levels[currentLevel].title,
-                    endsIn: +(new Date()) + 4000,
+                    endsIn: now + 4000,
                     opacity: 1
                 });
 
@@ -698,6 +706,8 @@
                         level.tick(this);
                     }
                 }
+
+                this.bonusPoints = Math.max(0, Math.floor(fullBonus * Math.round((1 - (now - this.startTime - this.timeOffset) / bonusTimeLimit) * 100) / 100));
 
                 this.score(ctx);
 
@@ -790,11 +800,14 @@
                 ctx.shadowOffsetX = 0;
                 ctx.shadowOffsetY = 0;
                 ctx.shadowBlur = 5;
-                ctx.textAlign = "right";
-
                 ctx.font = "16pt Arial";
                 ctx.fillStyle = "#f1f1f1";
+
+                ctx.textAlign = "right";
                 ctx.fillText("Level score: " + this.player.score, width - 10, 30);
+
+                ctx.textAlign = "left";
+                ctx.fillText("Time bonus: " + this.bonusPoints, 10, 30);
 
                 ctx.restore();
             },
@@ -847,6 +860,12 @@
             pause: function() {
                 this.paused = !this.paused;
 
+                if (this.paused) {
+                    this._pauseStart = +new Date;
+                } else {
+                    this.timeOffset += (+new Date - this._pauseStart);
+                }
+
                 highScores.render(levels);
                 highScores.toggle(this.paused);
             },
@@ -896,6 +915,8 @@
             },
 
             nextLevel: function() {
+                this.player.score += this.bonusPoints;
+
                 this.recordScore();
 
                 this.currentLevel++;
