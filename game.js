@@ -332,6 +332,7 @@
     });
 
     var game = (function() {
+        // guide the player to change the blob size on each tick
         function sizeTick(game) {
             var player = game.player;
             var compare = player.compare(this.endSize);
@@ -347,6 +348,10 @@
             this.compare = compare;
 
             player.color = color;
+
+            if (this.sizingMessages === false) {
+                return;
+            }
 
             var endsIn = +new Date;
 
@@ -376,6 +381,50 @@
             messages.push(message);
         }
 
+        // split enemies into two ranges
+        function splitEnemiesTick(game) {
+            var enemies = game.enemies;
+            var min = 5;
+            var max = 30;
+            var mid = (min + (max - min) / 2) + 5;
+
+            for (var i = 0; i < enemies.length; i++) {
+                var r = enemies[i].radius;
+                if (min < r && r < max) {
+                    if (r > mid) {
+                        r = max;
+                    } else {
+                        r = min;
+                    }
+
+                    enemies[i].radius = r;
+                }
+            }
+        }
+
+        function timerTick(game) {
+            var now = +new Date;
+            var timeRemaining = (this.endTime - now) / 1000;
+            var messages = game.messages;
+            var message = messages[messages.length - 1];
+
+            if (!message || timeRemaining < 0) {
+                game.lose();
+            } else {
+                message.title = timeRemaining.toFixed(1) + "s";
+            }
+        }
+
+        function timerSetup(seconds) {
+            return function(game) {
+                this.endTime = +new Date + 1000 * seconds;
+
+                game.messages[0].endsIn = this.endTime;
+
+                this.tick(game);
+            }
+        }
+
         // level array. all levels are scriptable through the setup/tick callbacks
         var levels = [
             {
@@ -397,53 +446,17 @@
                     min: 15,
                     max: 25
                 },
-                tick: function(game) {
-                    var enemies = game.enemies;
-                    var min = 5;
-                    var max = 30;
-                    var mid = (min + (max - min) / 2) + 5;
-
-                    for (var i = 0; i < enemies.length; i++) {
-                        var r = enemies[i].radius;
-                        if (min < r && r < max) {
-                            if (r > mid) {
-                                r = max;
-                            } else {
-                                r = min;
-                            }
-
-                            enemies[i].radius = r;
-                        }
-                    }
-                }
+                tick: splitEnemiesTick
             },
             {
-                title: "The BIG slaum",
+                title: "The big slalom",
                 enemies: { count: 40, minSize: 1, maxSize: 70 },
                 powerups: 6,
                 endSize: {
                     min: 15,
                     max: 25
                 },
-                tick: function(game) {
-                    var enemies = game.enemies;
-                    var min = 5;
-                    var max = 60;
-                    var mid = 35;
-
-                    for (var i = 0; i < enemies.length; i++) {
-                        var r = enemies[i].radius;
-                        if (min < r && r < max) {
-                            if (r > mid) {
-                                r = max;
-                            } else {
-                                r = min;
-                            }
-
-                            enemies[i].radius = r;
-                        }
-                    }
-                }
+                tick: splitEnemiesTick
             },
             {
                 title: "Keep your form fit ",
@@ -469,25 +482,7 @@
                 title: "Don't get lost in the crowd",
                 enemies: { count: 75, maxSize: 40 },
                 powerups: 3,
-                tick: function(game) {
-                    var enemies = game.enemies;
-                    var min = 5;
-                    var max = 30;
-                    var mid = 10;
-
-                    for (var i = 0; i < enemies.length; i++) {
-                        var r = enemies[i].radius;
-                        if (min < r && r < max) {
-                            if (r > mid) {
-                                r = max;
-                            } else {
-                                r = min; 
-                            }
-
-                            enemies[i].radius = r;
-                        }
-                    }
-                }
+                tick: splitEnemiesTick
             },
             {
                 title: "Eat to succeed",
@@ -511,49 +506,18 @@
                 }
             },
             {
-                title: "Punctuality is a bliss",
+                title: "Punctuality is bliss",
                 enemies: { count: 20, maxSize: 40 },
                 powerups: 1,
                 endSize: {
                     min: 40,
                     max: 70
                 },
-                setup: function(game) {
-                    this.endTime = +new Date + 1000 * 30; // 10s time limit
-
-                    game.messages[0].endsIn = this.endTime;
-
-                    this.tick(game);
-                },
+                sizingMessages: false,
+                setup: timerSetup(30),
                 tick: function(game) {
-                    var now = +new Date;
-                    var timeRemaining = (this.endTime - now) / 1000;
-                    var messages = game.messages;
-                    var message = messages[messages.length - 1];
-
-                    if (!message || timeRemaining < 0) {
-                        game.lose();
-                    } else {
-                        message.title = timeRemaining.toFixed(1) + "s";
-                    }
-                    
-                    var enemies = game.enemies;
-                    var min = 10;
-                    var max = 20;
-                    var mid = (min + (max - min) / 2) + 5;
-
-                    for (var i = 0; i < enemies.length; i++) {
-                        var r = enemies[i].radius;
-                        if (min < r && r < max) {
-                            if (r > mid) {
-                                r = max;
-                            } else {
-                                r = min;
-                            }
-
-                            enemies[i].radius = r;
-                        }
-                    }
+                    splitEnemiesTick.call(this, game);
+                    timerTick.call(this, game);
                 }
             },
             {
@@ -561,25 +525,8 @@
                 enemies: { count: 30, maxSize: 45 },
                 tunnels: 1,
                 powerups: 1,
-                setup: function(game) {
-                    this.endTime = +new Date + 1000 * 30; // 10s time limit
-
-                    game.messages[0].endsIn = this.endTime;
-
-                    this.tick(game);
-                },
-                tick: function(game) {
-                    var now = +new Date;
-                    var timeRemaining = (this.endTime - now) / 1000;
-                    var messages = game.messages;
-                    var message = messages[messages.length - 1];
-
-                    if (!message || timeRemaining < 0) {
-                        game.lose();
-                    } else {
-                        message.title = timeRemaining.toFixed(1) + "s";
-                    }
-                }
+                setup: timerSetup(30),
+                tick: timerTick
             },
             {
                 title: "Epilogue",
