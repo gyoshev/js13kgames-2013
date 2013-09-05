@@ -418,17 +418,42 @@
                 }
             },
             {
-                title: "Eat to succeed",
-                enemies: { count: 10, maxSize: 8 },
-                powerups: 20,
+                title: "The BIG slaum",
+                enemies: { count: 40, minSize: 1, maxSize: 70 },
+                powerups: 6,
                 endSize: {
-                    min: 1,
-                    max: 10
+                    min: 15,
+                    max: 25
                 },
-                endSize: {
-                    min: 40,
-                    max: 70
+                tick: function(game) {
+                    var enemies = game.enemies;
+                    var min = 5;
+                    var max = 60;
+                    var mid = 35;
+
+                    for (var i = 0; i < enemies.length; i++) {
+                        var r = enemies[i].radius;
+                        if (min < r && r < max) {
+                            if (r > mid) {
+                                r = max;
+                            } else {
+                                r = min;
+                            }
+
+                            enemies[i].radius = r;
+                        }
+                    }
                 }
+            },
+            {
+                title: "Keep your form fit ",
+                enemies: { count: 30, maxSize: 40 },
+                endSize: {
+                    min: 20,
+                    max: 40
+                },
+                tunnels: 3,
+                powerups: 3
             },
             {
                 title: "Missing the gap is lethal",
@@ -439,6 +464,97 @@
                 },
                 tunnels: 1,
                 powerups: 1
+            },
+            {
+                title: "Don't get lost in the crowd",
+                enemies: { count: 75, maxSize: 40 },
+                powerups: 3,
+                tick: function(game) {
+                    var enemies = game.enemies;
+                    var min = 5;
+                    var max = 30;
+                    var mid = 10;
+
+                    for (var i = 0; i < enemies.length; i++) {
+                        var r = enemies[i].radius;
+                        if (min < r && r < max) {
+                            if (r > mid) {
+                                r = max;
+                            } else {
+                                r = min; 
+                            }
+
+                            enemies[i].radius = r;
+                        }
+                    }
+                }
+            },
+            {
+                title: "Eat to succeed",
+                enemies: { count: 13, maxSize: 8 },
+                powerups: 30,
+                endSize: {
+                    min: 40,
+                    max: 70
+                }
+            },
+            {
+                title: "Don't undermine your achievements",
+                enemies: { count: 7, minSize: 10, maxSize: 20 },
+                powerups: 10,
+                endSize: {
+                    min: 50,
+                    max: 100
+                },
+                setup: function(game) {
+                    game.player.radius = 80;
+                }
+            },
+            {
+                title: "Punctuality is a bliss",
+                enemies: { count: 20, maxSize: 40 },
+                powerups: 1,
+                endSize: {
+                    min: 40,
+                    max: 70
+                },
+                setup: function(game) {
+                    this.endTime = +new Date + 1000 * 30; // 10s time limit
+
+                    game.messages[0].endsIn = this.endTime;
+
+                    this.tick(game);
+                },
+                tick: function(game) {
+                    var now = +new Date;
+                    var timeRemaining = (this.endTime - now) / 1000;
+                    var messages = game.messages;
+                    var message = messages[messages.length - 1];
+
+                    if (!message || timeRemaining < 0) {
+                        game.lose();
+                    } else {
+                        message.title = timeRemaining.toFixed(1) + "s";
+                    }
+                    
+                    var enemies = game.enemies;
+                    var min = 10;
+                    var max = 20;
+                    var mid = (min + (max - min) / 2) + 5;
+
+                    for (var i = 0; i < enemies.length; i++) {
+                        var r = enemies[i].radius;
+                        if (min < r && r < max) {
+                            if (r > mid) {
+                                r = max;
+                            } else {
+                                r = min;
+                            }
+
+                            enemies[i].radius = r;
+                        }
+                    }
+                }
             },
             {
                 title: "Don't catch your breath",
@@ -463,22 +579,6 @@
                     } else {
                         message.title = timeRemaining.toFixed(1) + "s";
                     }
-                }
-            },
-            {
-                title: "Don't get lost in the crowd",
-                enemies: { count: 60, minSize: 30, maxSize: 40 },
-                powerups: 1
-            },
-            {
-                title: "Don't undermine your achievements",
-                powerups: 20,
-                endSize: {
-                    min: 40,
-                    max: 100
-                },
-                setup: function(game) {
-                    game.player.radius = 100;
                 }
             },
             {
@@ -537,7 +637,7 @@
                 canvas.height = height;
                 canvas.style.margin = "-" + height/2 + "px 0 0 -" + width/2 + "px";
 
-                this.currentLevel = 4;
+                this.currentLevel = 0;
 
                 this.ctx = canvas.getContext("2d");
 
