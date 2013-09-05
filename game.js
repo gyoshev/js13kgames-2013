@@ -916,14 +916,14 @@
         document.body.addEventListener(type, handler, false);
     }
 
-    var UP = 38, DOWN = 40, LEFT = 37, RIGHT = 39, SPACE = 32;
+    var UP = 38, DOWN = 40, LEFT = 37, RIGHT = 39, SPACE = 32, ESC = 27;
     var A = 65, S = 83, D = 68, W = 87, P = 80, R = 82;
 
     on("keydown", function(e) {
         var key = e.keyCode;
         var player = game.player;
 
-        if (key == P) {
+        if (key == ESC || key == P) {
             game.pause();
         } else if (key == R && game.paused) {
             game.start();
