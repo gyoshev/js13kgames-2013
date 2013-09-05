@@ -20,7 +20,7 @@
                 left: 50%;
             }
 
-            #scores {
+            .dialog {
                 position: absolute;
                 top: 50%;
                 left: 50%;
@@ -30,6 +30,7 @@
                 border: 8px solid #394344;
                 background: rgba(64,75,77,0.98);
                 font-family: Arial, sans-serif;
+                color: #fff;
             }
 
             h1 {
@@ -41,6 +42,15 @@
                 color: #ff931e;
                 font-size: 36px;
                 margin-left: 25px;
+            }
+
+            #info strong {
+                color: #ea4a18;
+            }
+
+            #info em {
+                color: #ffac2c;
+                font-style: normal;
             }
 
             .levels {
@@ -91,10 +101,10 @@
 
             .levels .description {
                 position: absolute;
-                left: -150px;
+                left: -210px;
                 font-size: 12px;
                 line-height: 13px;
-                width: 120px;
+                width: 180px;
                 padding: 4px 110px 4px 10px;
                 text-align: right;
                 color: #ea4a18;
@@ -112,10 +122,108 @@
                 font-size: 14px;
                 color: #ff931e;
             }
+
+            .blob {
+                border: 3px solid #fff;
+                border-radius: 50%;
+                display: inline-block;
+                vertical-align: middle;
+            }
+
+            .tiny {
+                height: 20px;
+                width: 20px;
+                background: #99f;
+            }
+
+            .perfect {
+                height: 40px;
+                width: 40px;
+                background: #ccc;
+            }
+
+            .huge {
+                height: 60px;
+                width: 60px;
+                background: #f99;
+            }
+
+            .weakling {
+                height: 16px;
+                width: 16px;
+                background: #317393;
+                border-color: #82c0cf;
+            }
+
+            .toughling {
+                height: 32px;
+                width: 32px;
+                background: #ea4a18;
+                border-color: #ffac2c;
+            }
+
+            .pill {
+                height: 16px;
+                width: 8px;
+                margin-left: 8px;
+                background: #00ee00;
+                border-width: 0;
+                border-radius: 0 50% 50% 0;
+            }
+
+            .wall .left, .wall .right {
+                display: inline-block;
+                height: 20px;
+                border: 1px solid #ffac2c;
+                background: #ea4a18;
+            }
+
+            .wall .left {
+                width: 65%;
+            }
+
+            .wall .right {
+                margin: 0 0 0 7%;
+                width: 27%;
+            }
+
         </style>
     </head>
     <body>
         <canvas id="c"></canvas>
+
+        <div id="info" class="dialog">
+            <h1>Life of Blobb</h1>
+
+            <p>Finish levels in the <em>perfect size</em>:</p>
+            <p style="font-size: 30px;">
+                <span class="tiny blob"></span>
+                &lt; <span class="perfect blob"></span>
+                &lt; <span class="huge blob"></span>
+            </p>
+            <p>
+                <span class="weakling blob"></span>
+                Consume weaklings to <em>become bigger</em>
+            </p>
+            <p>
+                <span class="toughling blob"></span>
+                Beware of toughlings who <em>consume you</em>
+            </p>
+            <p>
+                <span class="pill blob"></span>
+                Pills <em>split you in half</em>
+            </p>
+            <div class="wall"><div class="left"></div><div class="right"></div></div>
+            <p>Hitting walls <em>kills you instantly</em>, so go through the gap</p>
+            <p><em>Score points</em> by <em>growing and shrinking</em> Blobb</p>
+            <p>Finish levels faster to earn <em>bonus points</em></p>
+
+            <p>Show the <em>high scores</em> with <strong>Esc / P</strong></p>
+            <p>Show this <em>info screen</em> with <strong>I</strong>.</p>
+            <p>Move with <strong>arrow keys</strong> or <strong>ASDW</strong>.</p>
+
+            <p><button id="play"><u>P</u>lay</button></p>
+        </div>
 
         <script src="klass.min.js"></script>
         <script src="game.js"></script>

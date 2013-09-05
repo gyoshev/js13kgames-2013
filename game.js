@@ -57,6 +57,8 @@
         this.removeItem(key);
     };
 
+    // ==== GAME PRIMITIVES
+    //
     var Tunnel = klass(function() {
         this.width = 90;
         this.height = 20;
@@ -294,15 +296,35 @@
         }
     });
 
-    var ScoresDialog = klass({
-        render: function(levels) {
-            var wrapper = this.wrapper;
+    // ==== DIALOGS
+    //
+    var Dialog = klass({
+        wrapper: function() {
+            var wrapper = this._wrapper;
 
-            if (!this.wrapper) {
+            if (!this._wrapper) {
                 wrapper = document.createElement("div");
-                wrapper.id = "scores";
+                wrapper.className = "dialog";
                 document.body.appendChild(wrapper);
+                this._wrapper = wrapper;
             }
+
+            return wrapper;
+        },
+
+        toggle: function(visible) {
+            this.wrapper().style.display = visible ? "block" : "none";
+        }
+    });
+
+    var InfoDialog = Dialog.extend(function() {
+        this._wrapper = document.getElementById("info");
+    });
+
+    var ScoresDialog = Dialog.extend({
+        render: function(levels) {
+            var wrapper = this.wrapper();
+            wrapper.id = "scores";
 
             var info = this.processLevels(levels);
             wrapper.innerHTML =
@@ -310,13 +332,9 @@
                 "<ul class='levels'>" +
                     info.html +
                 "</ul>" +
-                "<button><u>R</u>estart</button>"
-
-            this.wrapper = wrapper;
-        },
-
-        toggle: function(shown) {
-            this.wrapper.style.display = shown ? "block" : "none";
+                "<p>Your high score is the total of level scores</p>" +
+                "<p>Replay past levels to beat your score!</p>" +
+                "<button><u>R</u>estart level</button>";
         },
 
         processLevels: function(levels) {
@@ -342,220 +360,227 @@
         }
     });
 
-    var game = (function() {
-        // guide the player to change the blob size on each tick
-        function sizeTick(game) {
-            var player = game.player;
-            var compare = player.compare(this.endSize);
-            var messages = game.messages;
-            var color = compare < 0 ? "#99f" :
-                        compare > 0 ? "#f99" :
-                        "#ccc";
+    var infoDialog = new InfoDialog();
+    var highScores = new ScoresDialog();
 
-            if (this.compare === compare && player.color == color) {
-                return;
-            }
+    // ==== LEVELS DECLARATIONS AND SCRIPTING
+    //
+    // guide the player to change the blob size on each tick
+    function sizeTick(game) {
+        var player = game.player;
+        var compare = player.compare(this.endSize);
+        var messages = game.messages;
+        var color = compare < 0 ? "#99f" :
+                    compare > 0 ? "#f99" :
+                    "#ccc";
 
-            this.compare = compare;
-
-            player.color = color;
-
-            if (this.sizingMessages === false) {
-                return;
-            }
-
-            var endsIn = +new Date;
-
-            if (messages.length) {
-                if (messages[messages.length - 1].aboutSizing) {
-                    // remove last message about sizing
-                    messages.pop();
-                } else {
-                    // queue after last message
-                    endsIn = messages[messages.length - 1].endsIn;
-                }
-            }
-
-            var message = { endsIn: endsIn + 3000, opacity: 1, aboutSizing: true };
-
-            if (compare < 0) {
-                message.title = "Get bigger!";
-                message.message = "Consume blue blobs";
-            } else if (compare > 0) {
-                message.title = "Get smaller!";
-                message.message = "Split yourself or brush off red blobs";
-            } else {
-                message.title = "You're in good shape";
-                message.message = "Finish the level in that size";
-            }
-
-            messages.push(message);
+        if (this.compare === compare && player.color == color) {
+            return;
         }
 
-        // split enemies into two ranges
-        function splitEnemiesTick(min,max,mid) {
-            return function (game) {
-                var enemies = game.enemies;
-                var min = min;
-                var max = max;
-                var mid = mid || (min + (max - min) / 2) + 5;
+        this.compare = compare;
 
-                for (var i = 0; i < enemies.length; i++) {
-                    var r = enemies[i].radius;
-                    if (min < r && r < max) {
-                        if (r > mid) {
-                            r = max;
-                        } else {
-                            r = min;
-                        }
+        player.color = color;
 
-                        enemies[i].radius = r;
+        if (this.sizingMessages === false) {
+            return;
+        }
+
+        var endsIn = +new Date;
+
+        if (messages.length) {
+            if (messages[messages.length - 1].aboutSizing) {
+                // remove last message about sizing
+                messages.pop();
+            } else {
+                // queue after last message
+                endsIn = messages[messages.length - 1].endsIn;
+            }
+        }
+
+        var message = { endsIn: endsIn + 3000, opacity: 1, aboutSizing: true };
+
+        if (compare < 0) {
+            message.title = "Get bigger!";
+            message.message = "Consume blue blobs";
+        } else if (compare > 0) {
+            message.title = "Get smaller!";
+            message.message = "Split yourself or brush off red blobs";
+        } else {
+            message.title = "You're in good shape";
+            message.message = "Finish the level in that size";
+        }
+
+        messages.push(message);
+    }
+
+    // split enemies into two ranges
+    function splitEnemiesTick(min,max,mid) {
+        return function (game) {
+            var enemies = game.enemies;
+            var min = min;
+            var max = max;
+            var mid = mid || (min + (max - min) / 2) + 5;
+
+            for (var i = 0; i < enemies.length; i++) {
+                var r = enemies[i].radius;
+                if (min < r && r < max) {
+                    if (r > mid) {
+                        r = max;
+                    } else {
+                        r = min;
                     }
-                }
-            };
-        }
 
-        function timerTick(game) {
-            var now = +new Date;
-            var timeRemaining = (this.endTime - now) / 1000;
-            var messages = game.messages;
-            var message = messages[messages.length - 1];
-
-            if (!message || timeRemaining < 0) {
-                game.lose();
-            } else {
-                message.title = timeRemaining.toFixed(1) + "s";
-            }
-        }
-
-        function timerSetup(seconds) {
-            return function(game) {
-                this.endTime = +new Date + 1000 * seconds;
-
-                game.messages[0].endsIn = this.endTime;
-
-                this.tick(game);
-            }
-        }
-
-        var splitEnemies1020 = splitEnemiesTick(10, 20);
-
-        // level array. all levels are scriptable through the setup/tick callbacks
-        var levels = [
-            {
-                title: "Learning the ropes",
-                reached: true,
-                lenght: 34,
-                enemies: 30,
-                powerups: 1,
-                endSize: {
-                    min: 40,
-                    max: 60
-                }
-            },
-            {
-                title: "Eat your way to the top",
-                enemies: 40,
-                powerups: 6,
-                endSize: {
-                    min: 15,
-                    max: 25
-                },
-                tick: splitEnemiesTick(5, 30)
-            },
-            {
-                title: "The big slalom",
-                enemies: { count: 40, minSize: 1, maxSize: 70 },
-                powerups: 6,
-                endSize: {
-                    min: 15,
-                    max: 25
-                },
-                tick: splitEnemiesTick(5, 60, 35)
-            },
-            {
-                title: "Keep your form fit ",
-                enemies: { count: 20, maxSize: 30 },
-                endSize: {
-                    min: 10,
-                    max: 20
-                },
-                tunnels: 3,
-                powerups: 3
-            },
-            {
-                title: "Missing the gap is lethal",
-                enemies: 30,
-                endSize: {
-                    min: 20,
-                    max: 40
-                },
-                tunnels: 1,
-                powerups: 1
-            },
-            {
-                title: "Don't get lost in the crowd",
-                enemies: { count: 75, maxSize: 40 },
-                powerups: 3,
-                tick: splitEnemiesTick(5, 30, 10)
-            },
-            {
-                title: "Eat to succeed",
-                enemies: { count: 13, maxSize: 8 },
-                powerups: 30,
-                endSize: {
-                    min: 40,
-                    max: 70
-                }
-            },
-            {
-                title: "Don't undermine your achievements",
-                enemies: { count: 7, minSize: 10, maxSize: 20 },
-                powerups: 10,
-                endSize: {
-                    min: 50,
-                    max: 100
-                },
-                setup: function(game) {
-                    game.player.radius = 80;
-                }
-            },
-            {
-                title: "Punctuality is bliss",
-                enemies: { count: 40, maxSize: 50 },
-                powerups: 1,
-                endSize: {
-                    min: 40,
-                    max: 70
-                },
-                sizingMessages: false,
-                setup: timerSetup(30),
-                tick: function(game) {
-                    splitEnemies1020.call(this, game);
-                    timerTick.call(this, game);
-                }
-            },
-            {
-                title: "Don't catch your breath",
-                enemies: { count: 30, maxSize: 45 },
-                tunnels: 1,
-                powerups: 1,
-                setup: timerSetup(30),
-                tick: timerTick
-            },
-            {
-                title: "Epilogue",
-                enemies: { count: 60, minSize: 4, maxSize: 8 },
-                length: 5*height,
-                setup: function(game) {
-                    var lastEnemy = game.enemies[0];
-                    lastEnemy.x = width / 2;
-                    lastEnemy.y = -this.length - height / 1.7;
-                    lastEnemy.radius = width;
+                    enemies[i].radius = r;
                 }
             }
-        ];
+        };
+    }
 
+    function timerTick(game) {
+        var now = +new Date;
+        var timeRemaining = (this.endTime - now) / 1000;
+        var messages = game.messages;
+        var message = messages[messages.length - 1];
+
+        if (!message || timeRemaining < 0) {
+            game.lose();
+        } else {
+            message.title = timeRemaining.toFixed(1) + "s";
+        }
+    }
+
+    function timerSetup(seconds) {
+        return function(game) {
+            this.endTime = +new Date + 1000 * seconds;
+
+            game.messages[0].endsIn = this.endTime;
+
+            this.tick(game);
+        }
+    }
+
+    var splitEnemies1020 = splitEnemiesTick(10, 20);
+
+    // level array. all levels are scriptable through the setup/tick callbacks
+    var levels = [
+        {
+            title: "Learning the ropes",
+            reached: true,
+            lenght: 34,
+            enemies: 30,
+            powerups: 1,
+            endSize: {
+                min: 40,
+                max: 60
+            }
+        },
+        {
+            title: "Eat your way to the top",
+            enemies: 40,
+            powerups: 6,
+            endSize: {
+                min: 15,
+                max: 25
+            },
+            tick: splitEnemiesTick(5, 30)
+        },
+        {
+            title: "The big slalom",
+            enemies: { count: 40, minSize: 1, maxSize: 70 },
+            powerups: 6,
+            endSize: {
+                min: 15,
+                max: 25
+            },
+            tick: splitEnemiesTick(5, 60, 35)
+        },
+        {
+            title: "Keep your form fit ",
+            enemies: { count: 20, maxSize: 30 },
+            endSize: {
+                min: 10,
+                max: 20
+            },
+            tunnels: 3,
+            powerups: 3
+        },
+        {
+            title: "Missing the gap is lethal",
+            enemies: 30,
+            endSize: {
+                min: 20,
+                max: 40
+            },
+            tunnels: 1,
+            powerups: 1
+        },
+        {
+            title: "Don't get lost in the crowd",
+            enemies: { count: 75, maxSize: 40 },
+            powerups: 3,
+            tick: splitEnemiesTick(5, 30, 10)
+        },
+        {
+            title: "Eat to succeed",
+            enemies: { count: 13, maxSize: 8 },
+            powerups: 30,
+            endSize: {
+                min: 40,
+                max: 70
+            }
+        },
+        {
+            title: "Don't undermine your achievements",
+            enemies: { count: 7, minSize: 10, maxSize: 20 },
+            powerups: 10,
+            endSize: {
+                min: 50,
+                max: 100
+            },
+            setup: function(game) {
+                game.player.radius = 80;
+            }
+        },
+        {
+            title: "Punctuality is bliss",
+            enemies: { count: 40, maxSize: 50 },
+            powerups: 1,
+            endSize: {
+                min: 40,
+                max: 70
+            },
+            sizingMessages: false,
+            setup: timerSetup(30),
+            tick: function(game) {
+                splitEnemies1020.call(this, game);
+                timerTick.call(this, game);
+            }
+        },
+        {
+            title: "Don't catch your breath",
+            enemies: { count: 30, maxSize: 45 },
+            tunnels: 1,
+            powerups: 1,
+            setup: timerSetup(30),
+            tick: timerTick
+        },
+        {
+            title: "Epilogue",
+            enemies: { count: 60, minSize: 4, maxSize: 8 },
+            length: 5*height,
+            setup: function(game) {
+                var lastEnemy = game.enemies[0];
+                lastEnemy.x = width / 2;
+                lastEnemy.y = -this.length - height / 1.7;
+                lastEnemy.radius = width;
+            }
+        }
+    ];
+
+    // ==== MAIN GAME OBJECT / LOOP
+    //
+    var game = (function() {
         var gameObjects = {
             enemies: { type: Blob },
             tunnels: { type: Tunnel },
@@ -563,10 +588,6 @@
         };
 
         var defaultLevelLength = 14 * height;
-
-        var highScores = new ScoresDialog();
-
-        highScores.render(levels);
 
         var bonusTimeLimit = 60 * 1000;
         var fullBonus = 5000;
@@ -609,7 +630,13 @@
                 this.preload([ "bg.png" ], function(images) {
                     this.backgroundPattern = this.ctx.createPattern(images[0], "repeat");
 
-                    game.start();
+                    this.start();
+
+                    this.pause();
+
+                    this.background(this.ctx);
+
+                    infoDialog.toggle(true);
 
                     requestAnimationFrame(function step(timestamp) {
                         game.tick();
@@ -869,9 +896,6 @@
                 } else {
                     this.timeOffset += (+new Date - this._pauseStart);
                 }
-
-                highScores.render(levels);
-                highScores.toggle(this.paused);
             },
 
             showMessage: function (title, message, opacity) {
@@ -953,14 +977,29 @@
     }
 
     var UP = 38, DOWN = 40, LEFT = 37, RIGHT = 39, SPACE = 32, ESC = 27;
-    var A = 65, S = 83, D = 68, W = 87, P = 80, R = 82;
+    var A = 65, S = 83, D = 68, W = 87, P = 80, R = 82, I = 73;
 
     on("keydown", function(e) {
         var key = e.keyCode;
         var player = game.player;
 
-        if (key == ESC || key == P) {
+        if (key == ESC) {
+            if (game.paused) {
+                game.pause();
+            }
+
+            infoDialog.toggle(false);
+            highScores.toggle(false);
+        } else if (key == P) {
             game.pause();
+
+            infoDialog.toggle(false);
+            highScores.render(levels);
+            highScores.toggle(game.paused);
+        } else if (key == I) {
+            game.pause();
+            highScores.toggle(false);
+            infoDialog.toggle(game.paused);
         } else if (key == R && game.paused) {
             game.start();
         } else if (!player.dead() && !game.won()) {
@@ -1013,10 +1052,13 @@
 
     on("click", function(e) {
         var target = e.target;
+        var button = closest(target, "button");
         var li = closest(target, "li");
 
-        if (nodeName(target) == "button") {
-            // restart button
+        if (button) {
+            infoDialog.toggle(false);
+            highScores.toggle(false);
+
             game.start();
         } else if (li && li.className == "reached") {
             // level selection
