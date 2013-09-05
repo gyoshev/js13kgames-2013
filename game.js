@@ -393,24 +393,26 @@
         }
 
         // split enemies into two ranges
-        function splitEnemiesTick(game) {
-            var enemies = game.enemies;
-            var min = 5;
-            var max = 30;
-            var mid = (min + (max - min) / 2) + 5;
+        function splitEnemiesTick(min,max,mid) {
+            return function (game) {
+                var enemies = game.enemies;
+                var min = min;
+                var max = max;
+                var mid = mid || (min + (max - min) / 2) + 5;
 
-            for (var i = 0; i < enemies.length; i++) {
-                var r = enemies[i].radius;
-                if (min < r && r < max) {
-                    if (r > mid) {
-                        r = max;
-                    } else {
-                        r = min;
+                for (var i = 0; i < enemies.length; i++) {
+                    var r = enemies[i].radius;
+                    if (min < r && r < max) {
+                        if (r > mid) {
+                            r = max;
+                        } else {
+                            r = min;
+                        }
+
+                        enemies[i].radius = r;
                     }
-
-                    enemies[i].radius = r;
                 }
-            }
+            };
         }
 
         function timerTick(game) {
@@ -436,6 +438,8 @@
             }
         }
 
+        var splitEnemies1020 = splitEnemiesTick(10, 20);
+
         // level array. all levels are scriptable through the setup/tick callbacks
         var levels = [
             {
@@ -457,7 +461,7 @@
                     min: 15,
                     max: 25
                 },
-                tick: splitEnemiesTick
+                tick: splitEnemiesTick(5, 30)
             },
             {
                 title: "The big slalom",
@@ -467,7 +471,7 @@
                     min: 15,
                     max: 25
                 },
-                tick: splitEnemiesTick
+                tick: splitEnemiesTick(5, 60, 35)
             },
             {
                 title: "Keep your form fit ",
@@ -493,7 +497,7 @@
                 title: "Don't get lost in the crowd",
                 enemies: { count: 75, maxSize: 40 },
                 powerups: 3,
-                tick: splitEnemiesTick
+                tick: splitEnemiesTick(5, 30, 10)
             },
             {
                 title: "Eat to succeed",
@@ -527,7 +531,7 @@
                 sizingMessages: false,
                 setup: timerSetup(30),
                 tick: function(game) {
-                    splitEnemiesTick.call(this, game);
+                    splitEnemies1020.call(this, game);
                     timerTick.call(this, game);
                 }
             },
