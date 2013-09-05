@@ -418,6 +418,19 @@
                 }
             },
             {
+                title: "Eat to succeed",
+                enemies: { count: 10, maxSize: 8 },
+                powerups: 20,
+                endSize: {
+                    min: 1,
+                    max: 10
+                },
+                endSize: {
+                    min: 40,
+                    max: 70
+                }
+            },
+            {
                 title: "Missing the gap is lethal",
                 enemies: 30,
                 endSize: {
@@ -524,7 +537,7 @@
                 canvas.height = height;
                 canvas.style.margin = "-" + height/2 + "px 0 0 -" + width/2 + "px";
 
-                this.currentLevel = 0;
+                this.currentLevel = 4;
 
                 this.ctx = canvas.getContext("2d");
 
