@@ -471,10 +471,10 @@
             },
             {
                 title: "Keep your form fit ",
-                enemies: { count: 30, maxSize: 40 },
+                enemies: { count: 20, maxSize: 30 },
                 endSize: {
-                    min: 20,
-                    max: 40
+                    min: 10,
+                    max: 20
                 },
                 tunnels: 3,
                 powerups: 3
@@ -518,7 +518,7 @@
             },
             {
                 title: "Punctuality is bliss",
-                enemies: { count: 20, maxSize: 40 },
+                enemies: { count: 40, maxSize: 50 },
                 powerups: 1,
                 endSize: {
                     min: 40,
