@@ -72,6 +72,7 @@
             this.start = constrain(random() * width, this.offset, width - this.offset - this.width);
             this.end = this.start + this.width;
             this.passed = false;
+            this.minDistance = (width - 2 * this.offset) / 4 + this.height;
         },
 
         draw: function(ctx) {
@@ -117,6 +118,16 @@
         },
 
         afterInit: function(game) {
+            // ensure distance from other tunnel
+            var tunnels = game.tunnels;
+
+            for (var i = 0; i < tunnels.length; i++) {
+                if (tunnels[i] != this && Math.abs(this.y - tunnels[i].y) < this.minDistance) {
+                    this.y = tunnels[i].y - this.minDistance;
+                }
+            }
+
+            // remove blobs around tunnel
             var enemies = game.enemies;
             var gateRadius = this.gateRadius;
             var enemy;
