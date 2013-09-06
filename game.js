@@ -461,7 +461,7 @@
         }
     }
 
-    var splitEnemies1020 = splitEnemiesTick(10, 20);
+    var splitEnemies1020 = splitEnemiesTick(18, 25, 17);
 
     // level array. all levels are scriptable through the setup/tick callbacks
     var levels = [
@@ -517,9 +517,13 @@
         },
         {
             title: "Don't get lost in the crowd",
-            enemies: { count: 75, maxSize: 40 },
+            enemies: { count: 75, maxSize: 50 },
             powerups: 3,
-            tick: splitEnemiesTick(5, 30, 10)
+            endSize: {
+                min: 1,
+                max: 50
+            },
+            tick: splitEnemiesTick(5, 50, 10)
         },
         {
             title: "Eat to succeed",
