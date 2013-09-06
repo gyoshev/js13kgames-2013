@@ -334,7 +334,7 @@
                 "</ul>" +
                 "<p>Your high score is the total of level scores</p>" +
                 "<p>Replay levels to improve your score!</p>" +
-                "<button id='unpause'>Un<u>p</u>ause</button> " +
+                "<button id='unpause'>Un<u>p</u>ause</button>&nbsp;" +
                 "<button id='restart'><u>R</u>estart level</button>";
         },
 
@@ -1062,12 +1062,12 @@
         var li = closest(target, "li");
 
         if (button) {
+            highScores.toggle(false);
+            infoDialog.toggle(false);
+
             if (button.id == "unpause") {
                 game.pause();
             } else {
-                infoDialog.toggle(false);
-                highScores.toggle(false);
-
                 game.start();
             }
         } else if (li && li.className == "reached") {
