@@ -468,7 +468,6 @@
         {
             title: "Learning the ropes",
             reached: true,
-            lenght: 34,
             enemies: 30,
             powerups: 1,
             endSize: {
