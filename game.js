@@ -217,7 +217,7 @@
                 while (R && r && (r + R - d) > 0) {
                     this.radius = r = Math.max(0, r + mod/r);
                     player.radius = R = Math.max(0, R - mod/R);
-                    player.score += 1;
+                    player.score += (R > 50) ? .2 : 1;
                     d = this.centerDistance(player);
                 }
 
@@ -328,7 +328,7 @@
 
             var info = this.processLevels(levels);
             wrapper.innerHTML =
-                "<h1>Highscore <span id='score'>" + info.totalScore + "</span></h1>" +
+                "<h1>Highscore <span id='score'>" + Math.floor(info.totalScore) + "</span></h1>" +
                 "<ul class='levels'>" +
                     info.html +
                 "</ul>" +
@@ -352,7 +352,7 @@
 
                 html += "<li class='" + (reached ? "reached" : "unavailable") + "' data-id='" + i + "'>" +
                             "<a class='description'>" + (reached ? level.title : "???") +
-                             (score ? "<span class='score'>" + score + "</span>" : "") +
+                             (score ? "<span class='score'>" + Math.floor(score) + "</span>" : "") +
                             "</a>" +
                         "</li>";
             }
@@ -841,7 +841,7 @@
                 ctx.fillStyle = "#f1f1f1";
 
                 ctx.textAlign = "right";
-                ctx.fillText("Level score: " + this.player.score, width - 10, 30);
+                ctx.fillText("Level score: " + Math.floor(this.player.score), width - 10, 30);
 
                 ctx.textAlign = "left";
                 ctx.fillText("Time bonus: " + this.bonusPoints, 10, 30);
