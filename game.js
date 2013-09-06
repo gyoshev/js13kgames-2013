@@ -535,7 +535,7 @@
             }
         },
         {
-            title: "Don't undermine your achievements",
+            title: "Pills can kill you",
             enemies: { count: 7, minSize: 10, maxSize: 20 },
             powerups: 10,
             endSize: {
@@ -742,7 +742,9 @@
                     }
                 }
 
-                this.bonusPoints = Math.max(0, Math.floor(fullBonus * Math.round((1 - (now - this.startTime - this.timeOffset) / bonusTimeLimit) * 100) / 100));
+                if (!player.dead() && !this.won()) {
+                    this.bonusPoints = Math.max(0, Math.floor(fullBonus * Math.round((1 - (now - this.startTime - this.timeOffset) / bonusTimeLimit) * 100) / 100));
+                }
 
                 this.score(ctx);
 
