@@ -44,6 +44,10 @@
                 margin-left: 25px;
             }
 
+            #info {
+                text-align: center;
+            }
+
             #info strong {
                 color: #ea4a18;
             }
@@ -51,6 +55,10 @@
             #info em {
                 color: #ffac2c;
                 font-style: normal;
+            }
+
+            #scores {
+                text-align: center;
             }
 
             .levels {
@@ -64,7 +72,7 @@
                 font-weight: bold;
                 width: 20px;
                 height: 20px;
-                margin: 0 0 25px 235px;
+                margin: 0 0 17px 295px;
                 border: 3px solid #ea4a18;
                 border-radius: 50%;
                 position: relative;
@@ -74,7 +82,7 @@
                 content: "";
                 display: block;
                 width: 1px;
-                height: 25px;
+                height: 18px;
                 position: absolute;
                 bottom: 22px;
                 left: 8px;
@@ -101,10 +109,10 @@
 
             .levels .description {
                 position: absolute;
-                left: -210px;
+                left: -270px;
                 font-size: 12px;
                 line-height: 13px;
-                width: 180px;
+                width: 245px;
                 padding: 4px 110px 4px 10px;
                 text-align: right;
                 color: #ea4a18;
@@ -149,6 +157,7 @@
             }
 
             .weakling {
+                margin: 5px 0 0 9px;
                 height: 16px;
                 width: 16px;
                 background: #317393;
@@ -165,7 +174,7 @@
             .pill {
                 height: 16px;
                 width: 8px;
-                margin-left: 8px;
+                margin: 7px 0 0 19px;
                 background: #00ee00;
                 border-width: 0;
                 border-radius: 0 50% 50% 0;
@@ -187,6 +196,35 @@
                 width: 27%;
             }
 
+            .left-info {
+                padding-left: 145px;
+                line-height: 32px;
+                text-align: left;
+            }
+
+            .left-info .blob {
+                position: absolute;
+                left: 80px;
+            }
+
+            button {
+                color: #fff;
+                background: #ea4a18;
+                border: 3px solid #ffac2c;
+                border-radius: 5px;
+                padding: 0 1em;
+                font: bold 16px/32px Arial, sans-serif;
+                cursor: pointer;
+            }
+
+            button:hover {
+                background: #ff6432;
+            }
+
+            button:active {
+                background: #b71700;
+            }
+
         </style>
     </head>
     <body>
@@ -195,32 +233,32 @@
         <div id="info" class="dialog">
             <h1>Life of Blobb</h1>
 
-            <p>Finish levels in the <em>perfect size</em>:</p>
+            <p>Finish levels in <em>the perfect size</em>:</p>
             <p style="font-size: 30px;">
                 <span class="tiny blob"></span>
                 &lt; <span class="perfect blob"></span>
                 &lt; <span class="huge blob"></span>
             </p>
-            <p>
+            <p class="left-info">
                 <span class="weakling blob"></span>
                 Consume weaklings to <em>become bigger</em>
             </p>
-            <p>
+            <p class="left-info">
                 <span class="toughling blob"></span>
                 Beware of toughlings who <em>consume you</em>
             </p>
-            <p>
+            <p class="left-info">
                 <span class="pill blob"></span>
                 Pills <em>split you in half</em>
             </p>
             <div class="wall"><div class="left"></div><div class="right"></div></div>
-            <p>Hitting walls <em>kills you instantly</em>, so go through the gap</p>
+            <p style="margin-bottom: 2em">Hitting walls <em>kills you instantly</em>, so go through the gap</p>
             <p><em>Score points</em> by <em>growing and shrinking</em> Blobb</p>
             <p>Finish levels faster to earn <em>bonus points</em></p>
 
+            <p>Move with <strong>arrow keys</strong> or <strong>ASDW</strong>.</p>
             <p>Show the <em>high scores</em> with <strong>Esc / P</strong></p>
             <p>Show this <em>info screen</em> with <strong>I</strong>.</p>
-            <p>Move with <strong>arrow keys</strong> or <strong>ASDW</strong>.</p>
 
             <p><button id="play"><u>P</u>lay</button></p>
         </div>

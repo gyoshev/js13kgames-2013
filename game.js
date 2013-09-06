@@ -333,8 +333,9 @@
                     info.html +
                 "</ul>" +
                 "<p>Your high score is the total of level scores</p>" +
-                "<p>Replay past levels to beat your score!</p>" +
-                "<button><u>R</u>estart level</button>";
+                "<p>Replay levels to improve your score!</p>" +
+                "<button id='unpause'>Un<u>p</u>ause</button> " +
+                "<button id='restart'><u>R</u>estart level</button>";
         },
 
         processLevels: function(levels) {
@@ -1056,10 +1057,14 @@
         var li = closest(target, "li");
 
         if (button) {
-            infoDialog.toggle(false);
-            highScores.toggle(false);
+            if (button.id == "unpause") {
+                game.pause();
+            } else {
+                infoDialog.toggle(false);
+                highScores.toggle(false);
 
-            game.start();
+                game.start();
+            }
         } else if (li && li.className == "reached") {
             // level selection
             var level = li.getAttribute("data-id");
