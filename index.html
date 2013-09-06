@@ -36,12 +36,17 @@
             h1 {
                 text-align: center;
                 color: #f2f2f2;
+                position: relative;
             }
 
-            h1 span {
-                color: #ff931e;
-                font-size: 36px;
-                margin-left: 25px;
+            h1 .blob {
+                position: absolute;
+                background: #ea4a18;
+                border: 3px solid #ffac2c;
+                width: 14px;
+                height: 14px;
+                left: 50%;
+                margin: 12px 0 0 40px;
             }
 
             #info {
@@ -231,7 +236,7 @@
         <canvas id="c"></canvas>
 
         <div id="info" class="dialog">
-            <h1>Life of Blobb</h1>
+            <h1>Life of Blobb<span class="blob"></span></h1>
 
             <p>Finish levels in <em>the perfect size</em>:</p>
             <p style="font-size: 30px;">

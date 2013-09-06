@@ -42,20 +42,14 @@
         return distanceSquared < (blob.radius * blob.radius);
     }
 
-    // local storage helpers - source: http://stackoverflow.com/questions/2010892/storing-objects-in-html5-localstorage/3146971#3146971
-    // also https://github.com/jackrugile/spacepi-js13k/blob/master/source.html#L1422 :)
-    Storage.prototype.setObject = function(key, value) {
-        this.setItem(key, JSON.stringify(value));
-    };
+    function setObject(key, value) {
+        localStorage.setItem(key, JSON.stringify(value));
+    }
 
-    Storage.prototype.getObject = function(key) {
-        var value = this.getItem(key);
+    function getObject(key) {
+        var value = localStorage.getItem(key);
         return value && JSON.parse(value);
-    };
-
-    Storage.prototype.removeObject = function(key) {
-        this.removeItem(key);
-    };
+    }
 
     // ==== GAME PRIMITIVES
     //
@@ -341,7 +335,7 @@
         processLevels: function(levels) {
             var total = 0;
             var html = "";
-            var scores = localStorage.getObject("scores") || {};
+            var scores = getObject("scores") || {};
 
             for (var i = levels.length-1; i >= 0; i--) {
                 var level = levels[i];
@@ -943,9 +937,9 @@
 
                 levels[this.currentLevel].score = score;
 
-                var scores = localStorage.getObject("scores") || {};
+                var scores = getObject("scores") || {};
                 scores[this.currentLevel] = score;
-                localStorage.setObject("scores", scores);
+                setObject("scores", scores);
             },
 
             nextLevel: function() {
