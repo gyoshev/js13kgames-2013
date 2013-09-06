@@ -466,7 +466,7 @@
     // level array. all levels are scriptable through the setup/tick callbacks
     var levels = [
         {
-            title: "Learning the ropes",
+            title: "In the beginning, there were blobs",
             reached: true,
             enemies: 30,
             powerups: 1,
@@ -547,7 +547,7 @@
             }
         },
         {
-            title: "Punctuality is bliss",
+            title: "Punctuality is a virtue",
             enemies: { count: 40, maxSize: 50 },
             powerups: 1,
             endSize: {
