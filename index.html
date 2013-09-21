@@ -213,10 +213,16 @@
 
             .pill {
                 height: 16px;
-                width: 8px;
-                margin: 7px 0 0 19px;
-                background-color: #00ee00;
+                width: 16px;
+                margin: 7px 0 0 12px;
                 border-width: 0;
+                background-color: #00aa00;
+            }
+
+            .pill .inner {
+                width: 8px;
+                height: 16px;
+                background-color: #00ee00;
                 border-radius: 0 50% 50% 0;
             }
 
@@ -275,20 +281,20 @@
 
             <p>Finish levels in <em>the perfect size</em>:</p>
             <p>
-                <div class="blob-cell"><span class="tiny blob"></span></div>
-                <div class="blob-cell"><span class="perfect blob"></span></div>
-                <div class="blob-cell"><span class="huge blob"></span></div>
-            </p>
-            <p class="left-info">
-                <span class="weakling blob"></span>
-                Consume weaklings to <em>become bigger</em>
+                <span class="blob-cell"><span class="tiny blob"></span></span>
+                <span class="blob-cell"><span class="perfect blob"></span></span>
+                <span class="blob-cell"><span class="huge blob"></span></span>
             </p>
             <p class="left-info">
                 <span class="toughling blob"></span>
                 Beware of toughlings who <em>consume you</em>
             </p>
             <p class="left-info">
-                <span class="pill blob"></span>
+                <span class="weakling blob"></span>
+                Consume weaklings to <em>become bigger</em>
+            </p>
+            <p class="left-info">
+                <span class="pill blob"><span class="inner"></span></span>
                 Pills <em>split you in half</em>
             </p>
             <div class="wall"><div class="left"></div><div class="right"></div></div>

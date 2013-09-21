@@ -267,13 +267,19 @@
             var pi = Math.PI;
             var rotation = this.rotation + pi / 180;
             this.rotation = rotation;
+            ctx.lineWidth = 1;
+            ctx.strokeStyle = '#003300';
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.radius, 0, 2*pi, true);
+            ctx.closePath();
+            ctx.fillStyle = "#009900";
+            ctx.fill();
+            ctx.stroke();
             ctx.beginPath();
             ctx.arc(this.x, this.y, this.radius, rotation, rotation + pi, true);
             ctx.closePath();
             ctx.fillStyle = "#00ee00";
             ctx.fill();
-            ctx.lineWidth = 1;
-            ctx.strokeStyle = '#003300';
             ctx.stroke();
         },
 
